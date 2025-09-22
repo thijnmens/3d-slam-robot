@@ -10,7 +10,7 @@ def generate_launch_description():
     Generates the launch description for a simulated slam environment
     """
 
-    # Get share directories
+    # ROS Directory
     ros_dir = '/opt/ros/jazzy/share/'
 
     # Turtlebot3
