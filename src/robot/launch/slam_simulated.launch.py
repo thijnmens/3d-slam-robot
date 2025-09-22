@@ -11,14 +11,12 @@ def generate_launch_description():
     """
 
     # Get share directories
-    nav2_bringup_dir = get_package_share_directory('nav2_bringup')
-    slam_toolbox_dir = get_package_share_directory('slam_toolbox')
-    turtlebot3_gazebo_dir = get_package_share_directory('turtlebot3_gazebo')
+    ros_dir = '/opt/ros/jazzy/share/'
 
     # Turtlebot3
     turtlebot3_world_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(turtlebot3_gazebo_dir, 'launch', 'turtlebot3_world.launch.py')
+            os.path.join(ros_dir, 'turtlebot3_gazebo', 'launch', 'turtlebot3_world.launch.py')
         )
     )
 
@@ -34,7 +32,7 @@ def generate_launch_description():
     # Nav2_bringup
     navigation_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(nav2_bringup_dir, 'launch', 'navigation_launch.py')
+            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'navigation_launch.py')
         ),
         launch_arguments={'use_sim_time': 'True'}.items()
     )
@@ -42,7 +40,7 @@ def generate_launch_description():
     # Slam_toolbox
     slam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(slam_toolbox_dir, 'launch', 'online_async_launch.py')
+            os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
         ),
         launch_arguments={'use_sim_time': 'True'}.items()
     )
@@ -52,14 +50,30 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', os.path.join(nav2_bringup_dir, 'rviz', 'nav2_default_view.rviz')],
+        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
         output='screen'
     )
+
+    rplidar_node = Node(
+        name='rplidar_composition',
+        package='rplidar_ros',
+        executable='rplidar_composition',
+        output='screen',
+        parameters=[{
+            'serial_port': '/dev/ttyUSB0',
+            'serial_baudrate': 115200,  # A1 / A2
+            # 'serial_baudrate': 256000, # A3
+            'frame_id': 'laser',
+            'inverted': False,
+            'angle_compensate': True
+        }],
+    ),
 
     return LaunchDescription([
         turtlebot3_world_launch,
         teleop_keyboard_node,
         navigation_launch,
         slam_launch,
-        rviz2_node
+        rviz2_node,
+        # rplidar_node
     ])
