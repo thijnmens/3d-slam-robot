@@ -14,8 +14,10 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'),
          glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'config'),
+         glob('config/*')),
     ],
-    install_requires=['setuptools', 'launch'],
+    install_requires=['setuptools', 'launch', 'pyserial'],
     zip_safe=True,
     maintainer='group6',
     maintainer_email='group6@todo.todo',
@@ -24,6 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "serial_connector = robot.SerialConnector:main"
         ],
     },
 )

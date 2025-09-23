@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot
+  name="RoombaBot">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.00044319 -0.0035725 0.00095727"
+        rpy="0 0 0" />
+      <mass
+        value="0.25241" />
+      <inertia
+        ixx="0.00062311"
+        ixy="2.2177E-07"
+        ixz="-8.5969E-07"
+        iyy="0.0010161"
+        iyz="-8.9975E-09"
+        izz="0.0015954" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Lidar_link">
+    <inertial>
+      <origin
+        xyz="0.00030352 0.0025126 -0.10202"
+        rpy="0 0 0" />
+      <mass
+        value="2.4911" />
+      <inertia
+        ixx="0.0094743"
+        ixy="2.1458E-05"
+        ixz="-6.7269E-05"
+        iyy="0.022313"
+        iyz="-0.00016313"
+        izz="0.029638" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/Lidar_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/Lidar_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lidar_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 0.086308"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Lidar_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="BR_link">
+    <inertial>
+      <origin
+        xyz="1.3878E-17 0.014539 5.5511E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.080741" />
+      <inertia
+        ixx="2.5037E-05"
+        ixy="8.7105E-38"
+        ixz="-1.4689E-37"
+        iyy="3.7972E-05"
+        iyz="4.3634E-20"
+        izz="2.5037E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/BR_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/BR_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="BR_joint"
+    type="continuous">
+    <origin
+      xyz="-0.1 -0.1153 -0.01755"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="BR_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="FR_link">
+    <inertial>
+      <origin
+        xyz="-1.3878E-17 0.014539 5.2042E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.080741" />
+      <inertia
+        ixx="2.5037E-05"
+        ixy="8.7105E-38"
+        ixz="-1.4689E-37"
+        iyy="3.7972E-05"
+        iyz="4.3634E-20"
+        izz="2.5037E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/FR_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/FR_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="FR_joint"
+    type="continuous">
+    <origin
+      xyz="0.1 -0.1153 -0.0175"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="FR_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="BL_link">
+    <inertial>
+      <origin
+        xyz="1.3878E-17 -0.014539 4.1633E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.080741" />
+      <inertia
+        ixx="2.5037E-05"
+        ixy="-8.7414E-38"
+        ixz="1.4691E-37"
+        iyy="3.7972E-05"
+        iyz="-4.4218E-20"
+        izz="2.5037E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/BL_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/BL_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="BL_joint"
+    type="continuous">
+    <origin
+      xyz="-0.1 0.1153 -0.01755"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="BL_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="FL_link">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/FL_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://RoombaBot/meshes/FL_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="FL_joint"
+    type="continuous">
+    <origin
+      xyz="0.1 0.1153 -0.0175"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="FL_link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="FL_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+    </joint>
+    <joint name="FR_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+    </joint>
+    <joint name="BL_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+    </joint>
+    <joint name="BR_joint">
+        <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+        </command_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="Lidar_link">
+    <sensor name="lidar" type="ray">
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>12.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_ray_sensor" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+          <argument>--ros-args -r ~/out:=scan</argument>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>Lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

@@ -2,9 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/navigation2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/rplidar_ros" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/slam_toolbox" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/turtlebot3_simulations" vcs="Git" />
   </component>
 </project>
