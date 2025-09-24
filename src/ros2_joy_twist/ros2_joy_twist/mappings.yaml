@@ -4,9 +4,9 @@ joy_to_twist:
     axis_linear.y: 0
     axis_angular.yaw: 3
 
-    scale_linear.x: 0.2
-    scale_linear.y: 0.2
-    scale_angular.yaw: 0.2
+    scale_linear.x: 0.3
+    scale_linear.y: -0.3
+    scale_angular.yaw: 0.5
 
     enable_button: 5
     enable_turbo_button: 4
