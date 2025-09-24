@@ -1,62 +1,176 @@
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from tf_transformations import quaternion_from_euler
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
-from time import sleep
+from simple_pid import PID
+from time import time
+from math import sin, cos, pi
 
-#encoder = RotaryEncoder(a=9, b=11, max_steps=0)
+class MotorDriver(Node):
+    def __init__(self, config, L=0.20, W=0.20, R=0.03, pulses_per_rev=396):
+        super().__init__('motor_driver')
 
-class MotorDriver:
-    def __init__(self, config):
+        # ROS Subscription and Publisher
+        self.subscription = self.create_subscription(
+            Twist, 'cmd_vel', self.cmd_vel_callback, 10)
+        self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
 
-        self.FL_motor = Motor(forward=config["FL"]["in1"], backward=config["FL"]["in2"], pwm=False)
-        self.FL_enable = PWMOutputDevice(config["FL"]["ena"], frequency=1000, initial_value=0)
+        # Geometry of the Battlebot (cool guy with glasses emoji)
+        self.L = L  # wheelbase
+        self.W = W  # trackwidth
+        self.R = R  # wheel radius
+        self.pulses_per_rev = pulses_per_rev
 
-        self.FR_motor = Motor(forward=config["FR"]["in1"], backward=config["FR"]["in2"], pwm=False)
-        self.FR_enable = PWMOutputDevice(config["FR"]["ena"], frequency=1000, initial_value=0)
+        # Pose state (location of robot in a 2D coordinate system)
+        self.x = 0.0
+        self.y = 0.0
+        self.theta = 0.0
+        # Timestamp since the last odometetry update (position according to velocity)
+        self.last_odom_time = time()
 
-        self.RL_motor = Motor(forward=config["RL"]["in1"], backward=config["RL"]["in2"], pwm=False)
-        self.RL_enable = PWMOutputDevice(config["RL"]["ena"], frequency=1000, initial_value=0)
+        # Dictionary for the motor setup, the encoder and PID setup
+        self.motors = {}
+        self.encoders = {}
+        self.pids = {}
+        self.setpoints = {"FL": 0.0, "FR": 0.0, "RL": 0.0, "RR": 0.0}
+        self.prev_pulses = {"FL": 0, "FR": 0, "RL": 0, "RR": 0}
 
-        self.RR_motor = Motor(forward=config["RR"]["in1"], backward=config["RR"]["in2"], pwm=False)
-        self.RR_enable = PWMOutputDevice(config["RR"]["ena"], frequency=1000, initial_value=0)
+        for wheel, pins in config.items():
+            motor = Motor(forward=pins["in1"], backward=pins["in2"], pwm=False)
+            ena   = PWMOutputDevice(pins["ena"], frequency=1000, initial_value=0)
+            enc   = RotaryEncoder(a=pins["enc_a"], b=pins["enc_b"], max_steps=0)
+            self.motors[wheel] = {"motor": motor, "ena": ena}
+            self.encoders[wheel] = enc
+            self.pids[wheel] = PID(1.0, 0.1, 0.05, setpoint=0)  # tune later
+            self.pids[wheel].output_limits = (0, 1)
 
-    def drive_fl(self, direction="forward", speed=1.0):
-        self.FL_enable.value = speed
-        getattr(self.FL_motor, direction)()
+        # Control time - computes wheel speed with PID and Odometry time - speed of updates
+        self.last_control_time = time()
+        self.create_timer(0.02, self.control_loop)   # 50 Hz
+        self.create_timer(0.05, self.update_odometry) # 20 Hz
 
-    def drive_fr(self, direction="forward", speed=1.0):
-        self.FR_enable.value = speed
-        getattr(self.FR_motor, direction)()
+    # Use cmd_vel subscription to set velocity
+    def cmd_vel_callback(self, msg: Twist):
+        vx, vy, wz = msg.linear.x, msg.linear.y, msg.angular.z
 
-    def drive_rl(self, direction="forward", speed=1.0):
-        self.RL_enable.value = speed
-        getattr(self.RL_motor, direction)()
+        # Set the wheel linear velocity (m/s)
+        v_fl = vx - vy - (self.L + self.W) * wz
+        v_fr = vx + vy + (self.L + self.W) * wz
+        v_rl = vx + vy - (self.L + self.W) * wz
+        v_rr = vx - vy + (self.L + self.W) * wz
 
-    def drive_rr(self, direction="forward", speed=1.0):
-        self.RR_enable.value = speed
-        getattr(self.RR_motor, direction)()
+        # Normalize so |v| <= 1 (so we do not overspin the motors)
+        max_v = max(abs(v_fl), abs(v_fr), abs(v_rl), abs(v_rr), 1.0)
+        v_fl /= max_v
+        v_fr /= max_v
+        v_rl /= max_v
+        v_rr /= max_v
+
+        self.setpoints.update({"FL": v_fl, "FR": v_fr, "RL": v_rl, "RR": v_rr})
+
+    # Use encoders, so that we convert the pulses per revolution to m/s and update PID
+    def control_loop(self):
+        now = time()
+        dt = now - self.last_control_time
+        self.last_control_time = now
+
+        for wheel in ["FL", "FR", "RL", "RR"]:
+            enc = self.encoders[wheel]
+
+            # Amount of pulses since last update
+            pulses = enc.steps - self.prev_pulses[wheel]
+            self.prev_pulses[wheel] = enc.steps
+
+            # Convert pulses to m/s
+            revs = pulses / self.pulses_per_rev
+            distance = revs * 2 * pi * self.R
+            speed = distance / dt  # m/s
+
+            # Update the PID
+            self.pids[wheel].setpoint = abs(self.setpoints[wheel])
+            duty = self.pids[wheel](abs(speed))
+
+            motor = self.motors[wheel]["motor"]
+            ena   = self.motors[wheel]["ena"]
+
+            # Apply PWM with direction
+            if self.setpoints[wheel] >= 0:
+                ena.value = duty
+                motor.forward()
+            else:
+                ena.value = duty
+                motor.backward()
+
+    # -Update the odometry with the encoders
+    def update_odometry(self):
+        now = time()
+        dt = now - self.last_odom_time
+        self.last_odom_time = now
+
+        # Movement of wheels, since last update
+        d = {}
+        for wheel in ["FL", "FR", "RL", "RR"]:
+            pulses = self.encoders[wheel].steps - self.prev_pulses[wheel]
+            revs = pulses / self.pulses_per_rev
+            d[wheel] = revs * 2 * pi * self.R
+
+        # Mecanum inverse kinematics
+        vx = (d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0 / dt
+        vy = (-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0 / dt
+        wz = (-d["FL"] + d["FR"] - d["RL"] + d["RR"]) / (4.0 * (self.L + self.W)) / dt
+
+        # Calcute position of robot using the encoder information for velocity
+        self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
+        self.y += vx * sin(self.theta) * dt + vy * cos(self.theta) * dt
+        self.theta += wz * dt
+
+        # Publish to /odom
+        odom = Odometry()
+        odom.header.stamp = self.get_clock().now().to_msg()
+        odom.header.frame_id = "odom"
+        odom.child_frame_id = "base_link"
+
+        odom.pose.pose.position.x = self.x
+        odom.pose.pose.position.y = self.y
+        q = quaternion_from_euler(0, 0, self.theta)
+        odom.pose.pose.orientation.z = q[2]
+        odom.pose.pose.orientation.w = q[3]
+
+        odom.twist.twist.linear.x = vx
+        odom.twist.twist.linear.y = vy
+        odom.twist.twist.angular.z = wz
+
+        self.odom_pub.publish(odom)
 
     def stop_all(self):
-        for m, e in [
-            (self.FL_motor, self.FL_enable),
-            (self.FR_motor, self.FR_enable),
-            (self.RL_motor, self.RL_enable),
-            (self.RR_motor, self.RR_enable),
-        ]:
-            m.stop()
-            e.value = 0.0
+        for wheel in self.motors:
+            self.motors[wheel]["motor"].stop()
+            self.motors[wheel]["ena"].value = 0.0
 
-config = {
-    "FL": {"in1": 13, "in2": 6, "ena": 19},
-    "FR": {"in1": 17, "in2": 27, "ena": 22},
-    "RL": {"in1": 23, "in2": 24, "ena": 25},
-    "RR": {"in1": 5,  "in2": 12, "ena": 16},
-}
+def main(args=None):
+    rclpy.init(args=args)
 
-driver = MotorDriver(config)
+    config = {
+        "FL": {"in1": 13, "in2": 6,  "ena": 19, "enc_a": 9,  "enc_b": 11},
+        "FR": {"in1": 17, "in2": 27, "ena": 22, "enc_a": 14, "enc_b": 15},
+        "RL": {"in1": 23, "in2": 24, "ena": 25, "enc_a": 8,  "enc_b": 7},
+        "RR": {"in1": 5,  "in2": 12, "ena": 16, "enc_a": 20, "enc_b": 21},
+    }
 
-try:
-    driver.drive_fl("forward", 1.0)
-    sleep(5)
-finally:
-    driver.stop_all()
+    node = MotorDriver(config)
 
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.stop_all()
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
 

@@ -24,7 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "velocity_subscriber = robot.velocity_subscriber:main"
+            "velocity_subscriber = robot.velocity_subscriber:main",
+            "motor_driver = robot.motor_driver:main"
         ],
     },
 )
