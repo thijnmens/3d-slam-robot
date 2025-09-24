@@ -153,8 +153,8 @@ def main(args=None):
     rclpy.init(args=args)
     #enc-a = yellow
     config = {
-        "FL": {"in1": 23 , "in2": 24,  "ena": 18, "enc_a": 25,  "enc_b": 8},
-        "FR": {"in1": 7, "in2": 1, "ena": 12, "enc_a": 16, "enc_b": 20},
+        "FL": {"in1": 23 , "in2": 24,  "ena": 18, "enc_a": 25,  "enc_b": 27},
+        "FR": {"in1": 22, "in2": 1, "ena": 12, "enc_a": 16, "enc_b": 20},
         "RL": {"in1": 26, "in2": 21, "ena": 19, "enc_a": 0,  "enc_b": 11},
         "RR": {"in1": 6,  "in2": 5, "ena": 13, "enc_a": 9, "enc_b": 10},
     }
