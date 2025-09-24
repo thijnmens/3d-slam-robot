@@ -20,7 +20,7 @@ class MotorDriver(Node):
         # Geometry of the Battlebot (cool guy with glasses emoji)
         self.L = L  # wheelbase
         self.W = W  # trackwidth
-        self.R = R  # wheel radius
+        self.R = R  # wheel radiusi
         self.pulses_per_rev = pulses_per_rev
 
         # Pose state (location of robot in a 2D coordinate system)
@@ -102,6 +102,13 @@ class MotorDriver(Node):
             else:
                 ena.value = duty
                 motor.backward()
+
+                # 🔹 Print values for tuning
+            error = self.pids[wheel].setpoint - speed
+            self.get_logger().info(
+                f"[{wheel}] set={self.pids[wheel].setpoint:.2f} m/s, "
+                f"measured={speed:.2f} m/s, duty={duty:.2f}, error={error:.2f}"
+            )
 
     # -Update the odometry with the encoders
     def update_odometry(self):
