@@ -105,12 +105,15 @@ class MotorDriver(Node):
             ena   = self.motors[wheel]["ena"]
 
             # Apply PWM with direction
-            if self.setpoints[wheel] >= 0:
+            if self.setpoints[wheel] >= 0.1:
                 ena.value = duty
                 motor.forward()
-            else:
+            elif self.setpoints[wheel] <= 0.1:
                 ena.value = duty
                 motor.backward()
+            else:
+                ena.value = 0
+                motor.stop()
 
                 # 🔹 Print values for tuning
             error = self.pids[wheel].setpoint - speed
