@@ -76,12 +76,17 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': 'False'}.items()
     )
 
-    # Slam_toolbox
+    # Slam_toolbox with explicit params
+    slam_toolbox_share = get_package_share_directory('robot')
+    slam_params_file = os.path.join(slam_toolbox_share, 'config', 'slam_toolbox.yaml')
     slam_toolbox = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
         ),
-        launch_arguments={'use_sim_time': 'False'}.items()
+        launch_arguments={
+            'use_sim_time': 'False',
+            'slam_params_file': slam_params_file
+        }.items()
     )
 
     # Visualization
