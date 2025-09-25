@@ -108,7 +108,7 @@ class MotorDriver(Node):
             if self.setpoints[wheel] >= 0.1:
                 ena.value = duty
                 motor.forward()
-            elif self.setpoints[wheel] <= 0.1:
+            elif self.setpoints[wheel] <= -0.1:
                 ena.value = duty
                 motor.backward()
             else:
