@@ -11,8 +11,8 @@
     </General>
     <Discovery>
       <Peers>
-        <Peer address="145.93.232.60"/> <!-- PC IP -->
-        <Peer address="145.93.236.80"/> <!-- RPi IP -->
+        <Peer address="10.30.197.149"/> <!-- PC IP -->
+        <Peer address="10.30.197.64"/> <!-- RPi IP -->
       </Peers>
     </Discovery>
   </Domain>
