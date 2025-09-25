@@ -142,6 +142,7 @@ class MotorDriver(Node):
 
         # Mecanum inverse kinematics from encoders (encoder-only odometry)
         vx = (d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0 / dt
+        # Correct mecanum lateral term so pure rotation yields vy ≈ 0
         vy = (-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0 / dt
         wz = (-d["FL"] + d["FR"] - d["RL"] + d["RR"]) / (4.0 * (self.L + self.W)) / dt
 
@@ -149,6 +150,11 @@ class MotorDriver(Node):
         self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
         self.y += vx * sin(self.theta) * dt + vy * cos(self.theta) * dt
         self.theta += wz * dt
+        # Normalize yaw to [-pi, pi] to keep trig stable
+        while self.theta > pi:
+            self.theta -= 2 * pi
+        while self.theta < -pi:
+            self.theta += 2 * pi
 
         # Publish to /odom
         odom = Odometry()
