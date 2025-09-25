@@ -7,12 +7,12 @@
       <Interfaces>
         <NetworkInterface autodetermine="true"/>
       </Interfaces>
-      <AllowMulticast>true</AllowMulticast>
+      <AllowMulticast>false</AllowMulticast>
     </General>
     <Discovery>
       <Peers>
-        <Peer address="100.81.114.14"/> <!-- PC IP -->
-        <Peer address="100.101.50.102"/> <!-- RPi IP -->
+        <Peer address="145.93.232.60"/> <!-- PC IP -->
+        <Peer address="145.93.236.80"/> <!-- RPi IP -->
       </Peers>
     </Discovery>
   </Domain>

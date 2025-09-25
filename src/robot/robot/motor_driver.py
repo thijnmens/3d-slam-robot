@@ -23,7 +23,7 @@ class MotorDriver(Node):
         self.get_logger().info('Creating publisher on /odom topic')
         self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
 
-        # Geometry of the Battlebot (cool guy with glasses emoji)
+        # Geometry of the Battlebot
         self.L = L  # wheelbase
         self.W = W  # trackwidth
         self.R = R  # wheel radiusi
