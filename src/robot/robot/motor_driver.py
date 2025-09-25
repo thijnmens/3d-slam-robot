@@ -13,8 +13,13 @@ class MotorDriver(Node):
         super().__init__('motor_driver')
 
         # ROS Subscription and Publisher
+        self.get_logger().info('Initializing motor driver')
+
+        self.get_logger().info('Creating subscription on /cmd_vel topic')
         self.subscription = self.create_subscription(
             Twist, 'cmd_vel', self.cmd_vel_callback, 10)
+
+        self.get_logger().info('Creating publisher on /odom topic')
         self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
 
         # Geometry of the Battlebot (cool guy with glasses emoji)
@@ -105,7 +110,7 @@ class MotorDriver(Node):
 
                 # 🔹 Print values for tuning
             error = self.pids[wheel].setpoint - speed
-            self.get_logger().info(
+            self.get_logger().debug(
                 f"[{wheel}] set={self.pids[wheel].setpoint:.2f} m/s, "
                 f"measured={speed:.2f} m/s, duty={duty:.2f}, error={error:.2f}"
             )
