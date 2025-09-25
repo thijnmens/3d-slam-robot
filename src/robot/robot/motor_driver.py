@@ -60,11 +60,6 @@ class MotorDriver(Node):
         # TF broadcaster for odom -> base_link
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        # Last commanded body velocities for dead-reckoning fallback
-        self.last_cmd_time = self.get_clock().now()
-        self.last_cmd_vx = 0.0
-        self.last_cmd_vy = 0.0
-        self.last_cmd_wz = 0.0
 
     # Use cmd_vel subscription to set velocity
     def cmd_vel_callback(self, msg: Twist):
@@ -85,11 +80,6 @@ class MotorDriver(Node):
 
         self.setpoints.update({"FL": v_fl, "FR": v_fr, "RL": v_rl, "RR": v_rr})
 
-        # Save last commanded body velocities for odom fallback
-        self.last_cmd_time = self.get_clock().now()
-        self.last_cmd_vx = vx
-        self.last_cmd_vy = vy
-        self.last_cmd_wz = wz
 
     # Use encoders, so that we convert the pulses per revolution to m/s and update PID
     def control_loop(self):
@@ -147,24 +137,10 @@ class MotorDriver(Node):
             revs = pulses / self.pulses_per_rev
             d[wheel] = revs * 2 * pi * self.R
 
-        # Mecanum inverse kinematics from encoders
-        vx_enc = (d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0 / dt
-        vy_enc = (-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0 / dt
-        wz_enc = (-d["FL"] + d["FR"] - d["RL"] + d["RR"]) / (4.0 * (self.L + self.W)) / dt
-
-        # If encoders report near-zero motion, fall back to integrating recent cmd_vel
-        encoder_motion = abs(d["FL"]) + abs(d["FR"]) + abs(d["RL"]) + abs(d["RR"]) 
-        use_cmd_fallback = encoder_motion < 1e-5
-        recent_cmd = (self.get_clock().now() - self.last_cmd_time).nanoseconds * 1e-9 < 0.5
-
-        if use_cmd_fallback and recent_cmd:
-            vx = self.last_cmd_vx
-            vy = self.last_cmd_vy
-            wz = self.last_cmd_wz
-        else:
-            vx = vx_enc
-            vy = vy_enc
-            wz = wz_enc
+        # Mecanum inverse kinematics from encoders (encoder-only odometry)
+        vx = (d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0 / dt
+        vy = (-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0 / dt
+        wz = (-d["FL"] + d["FR"] - d["RL"] + d["RR"]) / (4.0 * (self.L + self.W)) / dt
 
         # Calcute position of robot using the encoder information for velocity
         self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
