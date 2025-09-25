@@ -59,6 +59,22 @@ def generate_launch_description():
         }],
     )
 
+    # nav2
+    nav2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_dir, 'nav2_bringup', 'launch', 'navigation_launch.py')
+        ),
+        launch_arguments={'use_sim_time': 'True'}.items()
+    )
+
+    # Slam_toolbox
+    slam_toolbox = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
+        ),
+        launch_arguments={'use_sim_time': 'True'}.items()
+    )
+
     # Visualization
     rviz2 = Node(
         package='rviz2',
@@ -73,5 +89,7 @@ def generate_launch_description():
         joy2twist,
         motor_driver,
         rplidar,
+        nav2,
+        slam_toolbox,
         rviz2,
     ])
