@@ -41,7 +41,9 @@ class MotorDriver(Node):
         self.encoders = {}
         self.pids = {}
         self.setpoints = {"FL": 0.0, "FR": 0.0, "RL": 0.0, "RR": 0.0}
-        self.prev_pulses = {"FL": 0, "FR": 0, "RL": 0, "RR": 0}
+        # Maintain independent encoder baselines for control and odometry
+        self.prev_pulses_control = {"FL": 0, "FR": 0, "RL": 0, "RR": 0}
+        self.prev_pulses_odom = {"FL": 0, "FR": 0, "RL": 0, "RR": 0}
 
         for wheel, pins in config.items():
             motor = Motor(forward=pins["in1"], backward=pins["in2"], pwm=False)
@@ -91,8 +93,8 @@ class MotorDriver(Node):
             enc = self.encoders[wheel]
 
             # Amount of pulses since last update
-            pulses = enc.steps - self.prev_pulses[wheel]
-            self.prev_pulses[wheel] = enc.steps
+            pulses = enc.steps - self.prev_pulses_control[wheel]
+            self.prev_pulses_control[wheel] = enc.steps
 
             # Convert pulses to m/s
             revs = pulses / self.pulses_per_rev
@@ -133,7 +135,8 @@ class MotorDriver(Node):
         # Movement of wheels, since last update
         d = {}
         for wheel in ["FL", "FR", "RL", "RR"]:
-            pulses = self.encoders[wheel].steps - self.prev_pulses[wheel]
+            pulses = self.encoders[wheel].steps - self.prev_pulses_odom[wheel]
+            self.prev_pulses_odom[wheel] = self.encoders[wheel].steps
             revs = pulses / self.pulses_per_rev
             d[wheel] = revs * 2 * pi * self.R
 
@@ -155,7 +158,9 @@ class MotorDriver(Node):
 
         odom.pose.pose.position.x = self.x
         odom.pose.pose.position.y = self.y
-        q = quaternion_from_euler(0, 0, self.theta)
+        q = quaternion_from_euler(0.0, 0.0, self.theta)
+        odom.pose.pose.orientation.x = q[0]
+        odom.pose.pose.orientation.y = q[1]
         odom.pose.pose.orientation.z = q[2]
         odom.pose.pose.orientation.w = q[3]
 
@@ -174,6 +179,8 @@ class MotorDriver(Node):
         t.transform.translation.x = self.x
         t.transform.translation.y = self.y
         t.transform.translation.z = 0.0
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]
         t.transform.rotation.w = q[3]
         self.tf_broadcaster.sendTransform(t)
