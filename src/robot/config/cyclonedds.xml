@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain id="any">
+    <General>
+      <AllowMulticast>true</AllowMulticast>
+    </General>
+    <Discovery>
+      <Peers>
+        <Peer address="100.81.114.14"/> <!-- PC IP -->
+        <Peer address="100.101.50.102"/> <!-- RPi IP -->
+      </Peers>
+    </Discovery>
+  </Domain>
+</CycloneDDS>
