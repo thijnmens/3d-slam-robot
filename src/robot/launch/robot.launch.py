@@ -73,7 +73,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_dir, 'nav2_bringup', 'launch', 'navigation_launch.py')
         ),
-        launch_arguments={'use_sim_time': 'True'}.items()
+        launch_arguments={'use_sim_time': 'False'}.items()
     )
 
     # Slam_toolbox
@@ -81,7 +81,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_dir, 'slam_toolbox', 'launch', 'online_async_launch.py')
         ),
-        launch_arguments={'use_sim_time': 'True'}.items()
+        launch_arguments={'use_sim_time': 'False'}.items()
     )
 
     # Visualization
