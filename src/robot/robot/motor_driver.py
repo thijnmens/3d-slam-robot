@@ -1,7 +1,8 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, TransformStamped
 from nav_msgs.msg import Odometry
+from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
 from simple_pid import PID
@@ -55,6 +56,9 @@ class MotorDriver(Node):
         self.last_control_time = time()
         self.create_timer(0.02, self.control_loop)   # 50 Hz
         self.create_timer(0.05, self.update_odometry) # 20 Hz
+
+        # TF broadcaster for odom -> base_link
+        self.tf_broadcaster = TransformBroadcaster(self)
 
     # Use cmd_vel subscription to set velocity
     def cmd_vel_callback(self, msg: Twist):
@@ -155,6 +159,19 @@ class MotorDriver(Node):
         odom.twist.twist.angular.z = wz
 
         self.odom_pub.publish(odom)
+
+        # Broadcast TF from odom to base_link
+        t = TransformStamped()
+        # Use ROS clock for header stamp
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = 'odom'
+        t.child_frame_id = 'base_link'
+        t.transform.translation.x = self.x
+        t.transform.translation.y = self.y
+        t.transform.translation.z = 0.0
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
+        self.tf_broadcaster.sendTransform(t)
 
     def stop_all(self):
         for wheel in self.motors:
