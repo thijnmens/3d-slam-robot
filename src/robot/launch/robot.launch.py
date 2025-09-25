@@ -94,7 +94,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', os.path.join(ros_dir, 'rplidar_ros', 'rviz', 'rplidar.rviz')],
+        arguments=['-d', os.path.join(ros_dir, 'nav2_bringup', 'rviz', 'nav2_default_view.rviz')],
         output='screen'
     )
 
