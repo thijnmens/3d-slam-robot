@@ -10,7 +10,7 @@ from time import time
 from math import sin, cos, pi
 
 class MotorDriver(Node):
-    def __init__(self, config, L=0.20, W=0.20, R=0.03, pulses_per_rev=396):
+    def __init__(self, config, L=0.20, W=0.21, R=0.03, pulses_per_rev=396):
         super().__init__('motor_driver')
 
         # ROS Subscription and Publisher
