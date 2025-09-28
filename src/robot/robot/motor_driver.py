@@ -29,12 +29,16 @@ class MotorDriver(Node):
         self.R = R  # wheel radiusi
         self.pulses_per_rev = pulses_per_rev
 
+        # Wheel direction/sign convention. Right side inverted in hardware.
+        # Positive encoder delta should correspond to positive forward motion.
+        self.wheel_sign = {"FL": 1, "FR": -1, "RL": 1, "RR": -1}
+
         # Pose state (location of robot in a 2D coordinate system)
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
-        # Timestamp since the last odometetry update (position according to velocity)
-        self.last_odom_time = time()
+        # Timestamp since the last odometry update (use ROS time for consistency)
+        self.last_odom_time = self.get_clock().now().nanoseconds * 1e-9
 
         # Dictionary for the motor setup, the encoder and PID setup
         self.motors = {}
@@ -93,7 +97,7 @@ class MotorDriver(Node):
             enc = self.encoders[wheel]
 
             # Amount of pulses since last update
-            pulses = enc.steps - self.prev_pulses_control[wheel]
+            pulses = self.wheel_sign[wheel] * (enc.steps - self.prev_pulses_control[wheel])
             self.prev_pulses_control[wheel] = enc.steps
 
             # Convert pulses to m/s
@@ -122,29 +126,45 @@ class MotorDriver(Node):
                 # 🔹 Print values for tuning
             error = self.pids[wheel].setpoint - speed
             self.get_logger().debug(
-                f"[{wheel}] set={self.pids[wheel].setpoint:.2f} m/s, "
+                f"[{wheel}] d_pulses={pulses} set={self.pids[wheel].setpoint:.2f} m/s, "
                 f"measured={speed:.2f} m/s, duty={duty:.2f}, error={error:.2f}"
             )
 
     # -Update the odometry with the encoders
     def update_odometry(self):
-        now = time()
-        dt = now - self.last_odom_time
-        self.last_odom_time = now
+        # Use ROS time to compute dt for odometry so stamps and TF align
+        now_time = self.get_clock().now()
+        now_ros = now_time.nanoseconds * 1e-9
+        dt = now_ros - self.last_odom_time
+        self.last_odom_time = now_ros
+        
+        # Debug: log odometry update frequency
+        self.get_logger().debug(f"Odometry update: dt={dt:.3f}s")
 
         # Movement of wheels, since last update
         d = {}
+        total_pulses = 0
         for wheel in ["FL", "FR", "RL", "RR"]:
-            pulses = self.encoders[wheel].steps - self.prev_pulses_odom[wheel]
+            pulses = self.wheel_sign[wheel] * (self.encoders[wheel].steps - self.prev_pulses_odom[wheel])
             self.prev_pulses_odom[wheel] = self.encoders[wheel].steps
+            total_pulses += abs(pulses)
             revs = pulses / self.pulses_per_rev
             d[wheel] = revs * 2 * pi * self.R
+        
+        # Debug: log if encoders are reading
+        # if total_pulses == 0:
+        #     self.get_logger().warn("No encoder movement detected - check wiring!")
 
-        # Mecanum inverse kinematics from encoders (encoder-only odometry)
-        vx = (d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0 / dt
-        # Correct mecanum lateral term so pure rotation yields vy ≈ 0
-        vy = (-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0 / dt
+        # Mecanum forward kinematics from encoders (encoder-only odometry)
+        vx = ((d["FL"] + d["FR"] + d["RL"] + d["RR"]) / 4.0) / dt
+        # Mecanum lateral motion
+        vy = ((-d["FL"] + d["FR"] + d["RL"] - d["RR"]) / 4.0) / dt
+        # Mecanum rotation - match the inverse kinematics convention
         wz = (-d["FL"] + d["FR"] - d["RL"] + d["RR"]) / (4.0 * (self.L + self.W)) / dt
+        # Scale movement to match physical behavior (adjust this multiplier as needed)
+        vx = vx * -1.26
+        vy = vy * 1.26
+        wz = wz * -2.1
 
         # Calcute position of robot using the encoder information for velocity
         self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
@@ -158,7 +178,8 @@ class MotorDriver(Node):
 
         # Publish to /odom
         odom = Odometry()
-        odom.header.stamp = self.get_clock().now().to_msg()
+        # Stamp odometry with the same time used for integration
+        odom.header.stamp = now_time.to_msg()
         odom.header.frame_id = "odom"
         odom.child_frame_id = "base_link"
 
@@ -178,8 +199,8 @@ class MotorDriver(Node):
 
         # Broadcast TF from odom to base_link
         t = TransformStamped()
-        # Use ROS clock for header stamp
-        t.header.stamp = self.get_clock().now().to_msg()
+        # Use the same stamp as odometry/integration for TF
+        t.header.stamp = now_time.to_msg()
         t.header.frame_id = 'odom'
         t.child_frame_id = 'base_link'
         t.transform.translation.x = self.x

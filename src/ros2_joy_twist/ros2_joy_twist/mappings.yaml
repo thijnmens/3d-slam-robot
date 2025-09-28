@@ -10,6 +10,6 @@ joy_to_twist:
 
     enable_button: 5
     enable_turbo_button: 4
-    turbo_scale: 3.0
+    turbo_scale: 2.5
 
     deadzone: 0.05
