@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 from .wheel import Wheel
@@ -65,24 +66,29 @@ class Robot:
         yield self.rear_left
         yield self.rear_right
 
+    def pulses_to_distance(self, pulses: int):
+        revolutions = pulses / (self.pulses_per_rev * self.gear_ratio)
+        return self.wheel_diameter * math.pi * revolutions
+
     def get_forward_velocity(self) -> float:
-        return (  self.front_left.get_revolutions(self.wheel_diameter)
-                + self.front_right.get_revolutions(self.wheel_diameter)
-                + self.rear_left.get_revolutions(self.wheel_diameter)
-                + self.rear_right.get_revolutions(self.wheel_diameter)
+
+        return (  self.pulses_to_distance(self.front_left.pulses)
+                + self.pulses_to_distance(self.front_right.pulses)
+                + self.pulses_to_distance(self.rear_left.pulses)
+                + self.pulses_to_distance(self.rear_right.pulses)
             ) / 4
 
     def get_right_velocity(self) -> float:
-        return (- self.front_left.get_revolutions(self.wheel_diameter)
-                + self.front_right.get_revolutions(self.wheel_diameter)
-                + self.rear_left.get_revolutions(self.wheel_diameter)
-                - self.rear_right.get_revolutions(self.wheel_diameter)
+        return (- self.pulses_to_distance(self.front_left.pulses)
+                + self.pulses_to_distance(self.front_right.pulses)
+                + self.pulses_to_distance(self.rear_left.pulses)
+                - self.pulses_to_distance(self.rear_right.pulses)
             ) / 4
 
     def get_angular_velocity(self) -> float:
         factor = 4.0 * (self.wheel_base + self.track_width)
-        return (- self.front_left.get_revolutions(self.wheel_diameter)
-                + self.front_right.get_revolutions(self.wheel_diameter)
-                - self.rear_left.get_revolutions(self.wheel_diameter)
-                + self.rear_right.get_revolutions(self.wheel_diameter)
+        return (- self.pulses_to_distance(self.front_left.pulses)
+                + self.pulses_to_distance(self.front_right.pulses)
+                - self.pulses_to_distance(self.rear_left.pulses)
+                + self.pulses_to_distance(self.rear_right.pulses)
             ) / factor

@@ -3,8 +3,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Wheel:
+    """
+    Keeps data on each wheel and contains functions for wheel calculations
+    """
     forward: bool
-    pulses: float
+    pulses: int
     pwm: int
     in1: int
     in2: int
@@ -19,9 +22,3 @@ class Wheel:
         self.in2 = in2
         self.encoder_a = encoder_a
         self.encoder_b = encoder_b
-
-    def update_pulses(self, pulses: int):
-        self.pulses = pulses
-
-    def get_revolutions(self, diameter: int) -> float:
-        return diameter * self.pulses * math.pi

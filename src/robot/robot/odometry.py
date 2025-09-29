@@ -23,38 +23,37 @@ class Odometry(Node):
         self.y: float = 0.0
         self.yaw: float = 0.0
 
+        # /encoder subscription
         self.get_logger().info("Creating subscription on /encoder topic")
         self.subscription_sub: Subscription = self.create_subscription(Encoder, '/encoder', self.calculate_odom, 10)
 
+        # /odom publisher
         self.get_logger().info("Creating publisher on /odom topic")
         self.odom_pub: Publisher = self.create_publisher(Odom, 'odom', 10)
 
+        # /tf publisher
         self.tf_broadcaster = TransformBroadcaster(self)
 
         # Robot details
         self.get_logger().info("Getting robot details")
         self.robot = Robot()
 
-        # TODO: remove, it's for testing only
-        self.calculate_odom(Encoder())
-
-    def calculate_odom(self, encoder: Encoder):
+    def calculate_odom(self, encoder: Encoder) -> None:
+        """
+        Calculate the odometry of the robot based on the new encoder data.
+        :param encoder: new encoder data.
+        """
 
         # Update pulses per wheel
-        self.robot.front_left.update_pulses(encoder.front_left)
-        self.robot.front_right.update_pulses(encoder.front_right)
-        self.robot.rear_left.update_pulses(encoder.rear_left)
-        self.robot.rear_right.update_pulses(encoder.rear_right)
+        self.robot.front_left.pulses = encoder.front_left
+        self.robot.front_right.pulses = encoder.front_right
+        self.robot.rear_left.pulses = encoder.rear_left
+        self.robot.rear_right.pulses = encoder.rear_right
 
         # Calculate velocities
         vel_x = self.robot.get_forward_velocity()
         vel_y = self.robot.get_right_velocity()
         vel_yaw = self.robot.get_angular_velocity()
-
-        # Multiply velocities to match real world
-        vel_x *= -1.26
-        vel_y *= 1.26
-        vel_yaw *= -2.1
 
         # Update X and Y coordinates
         self.x += vel_x * math.cos(self.yaw) - vel_y * math.sin(self.yaw)
@@ -72,7 +71,13 @@ class Odometry(Node):
         self.publish_tf()
 
 
-    def publish_odom(self, vel_x, vel_y, vel_yaw):
+    def publish_odom(self, vel_x, vel_y, vel_yaw) -> None:
+        """
+        Publishes the odometry of the robot to /odom
+        :param vel_x: Linear velocity on the X axis
+        :param vel_y: Linear velocity on the Y axis
+        :param vel_yaw: Angular velocity on the Z axis
+        """
         q = quaternion_from_euler(0.0, 0.0, self.yaw)
         odom = Odom()
 
@@ -91,7 +96,11 @@ class Odometry(Node):
         odom.twist.twist.linear.y = vel_y
         odom.twist.twist.angular.z = vel_yaw
 
-    def publish_tf(self):
+    def publish_tf(self) -> None:
+        """
+        Publishes the transformation matrix to /tf
+        """
+
         q = quaternion_from_euler(0.0, 0.0, self.yaw)
         tf = TransformStamped()
 
