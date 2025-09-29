@@ -1,7 +1,7 @@
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
-from src.robot.robot.dataclasses.robot import Robot
-from src.messages.msg import Encoder
+from .dataclasses.robot import Robot
+from messages.msg import Encoder  # noqa: F401
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
 
 class MotionController(Node):
