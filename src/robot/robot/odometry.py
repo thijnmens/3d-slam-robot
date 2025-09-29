@@ -23,6 +23,9 @@ class Odometry(Node):
         self.y: float = 0.0
         self.yaw: float = 0.0
 
+        # Save time of last update for delta time calculation
+        self.last_time = self.get_clock().now()
+
         # /encoder subscription
         self.get_logger().info("Creating subscription on /encoder topic")
         self.subscription_sub: Subscription = self.create_subscription(Encoder, '/encoder', self.calculate_odom, 10)
@@ -44,6 +47,13 @@ class Odometry(Node):
         :param encoder: new encoder data.
         """
 
+        # Compute delta time since last update
+        now = self.get_clock().now()
+        dt = (now.nanoseconds - self.last_time.nanoseconds) / 1e9
+        if dt <= 0:
+            return
+        self.last_time = now
+
         # Update pulses per wheel
         self.robot.front_left.pulses = encoder.front_left
         self.robot.front_right.pulses = encoder.front_right
@@ -55,10 +65,10 @@ class Odometry(Node):
         vel_y = self.robot.get_right_velocity()
         vel_yaw = self.robot.get_angular_velocity()
 
-        # Update X and Y coordinates
-        self.x += vel_x * math.cos(self.yaw) - vel_y * math.sin(self.yaw)
-        self.y += vel_y * math.cos(self.yaw) + vel_x * math.sin(self.yaw)
-        self.yaw += vel_yaw
+        # Update X, Y and Yaw
+        self.x += vel_x * math.cos(self.yaw) * dt - vel_y * math.sin(self.yaw) * dt
+        self.y += vel_x * math.sin(self.yaw) * dt + vel_y * math.cos(self.yaw) * dt
+        self.yaw += vel_yaw * dt
 
         # Normalize yaw to [-pi, pi]
         while self.yaw > math.pi:
@@ -95,6 +105,8 @@ class Odometry(Node):
         odom.twist.twist.linear.x = vel_x
         odom.twist.twist.linear.y = vel_y
         odom.twist.twist.angular.z = vel_yaw
+
+        self.odom_pub.publish(odom)
 
     def publish_tf(self) -> None:
         """
