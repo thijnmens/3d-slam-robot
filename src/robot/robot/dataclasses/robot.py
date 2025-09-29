@@ -10,8 +10,8 @@ class Robot:
     front_right: Wheel
     rear_left: Wheel
     rear_right: Wheel
-    wheel_base: int
-    track_width: int
+    robot_width: int
+    robot_length: int
     wheel_diameter: int
     pulses_per_rev: int
     gear_ratio: float
@@ -95,7 +95,7 @@ class Robot:
             ) / 4
 
     def get_angular_velocity(self) -> float:
-        factor = 4.0 * (self.wheel_base + self.track_width)
+        factor = 4.0 * (self.robot_width + self.robot_length)
         return (- self.pulses_to_distance(self.front_left.pulses)
                 + self.pulses_to_distance(self.front_right.pulses)
                 - self.pulses_to_distance(self.rear_left.pulses)
