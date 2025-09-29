@@ -7,10 +7,9 @@ from messages.msg import Encoder  # noqa: F401
 from nav_msgs.msg import Odometry as Odom
 from rclpy.publisher import Publisher
 from rclpy.subscription import Subscription
-from src.robot.robot.dataclasses.robot import Robot
+from .dataclasses.robot import Robot
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
-from .dataclasses import Wheels, Wheel
 
 
 class Odometry(Node):
@@ -37,20 +36,20 @@ class Odometry(Node):
         self.robot = Robot()
 
         # TODO: remove, it's for testing only
-        self.calculate_odom(None)
+        self.calculate_odom(Encoder())
 
     def calculate_odom(self, encoder: Encoder):
 
         # Update pulses per wheel
-        self.wheels.front_left.update_pulses(encoder.front_left)
-        self.wheels.front_right.update_pulses(encoder.front_right)
-        self.wheels.rear_left.update_pulses(encoder.rear_left)
-        self.wheels.rear_right.update_pulses(encoder.rear_right)
+        self.robot.front_left.update_pulses(encoder.front_left)
+        self.robot.front_right.update_pulses(encoder.front_right)
+        self.robot.rear_left.update_pulses(encoder.rear_left)
+        self.robot.rear_right.update_pulses(encoder.rear_right)
 
         # Calculate velocities
-        vel_x = self.wheels.get_forward_velocity(self.wheel_diameter)
-        vel_y = self.wheels.get_right_velocity(self.wheel_diameter)
-        vel_yaw = self.wheels.get_angular_velocity(self.wheel_base, self.track_width, self.wheel_diameter)
+        vel_x = self.robot.get_forward_velocity()
+        vel_y = self.robot.get_right_velocity()
+        vel_yaw = self.robot.get_angular_velocity()
 
         # Multiply velocities to match real world
         vel_x *= -1.26

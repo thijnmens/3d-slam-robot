@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.robot.robot.dataclasses import Wheel
+from .wheel import Wheel
 
 
 @dataclass
@@ -65,24 +65,24 @@ class Robot:
         yield self.rear_left
         yield self.rear_right
 
-    def get_forward_velocity(self, diameter: int) -> float:
-        return (  self.front_left.get_revolutions(diameter)
-                + self.front_right.get_revolutions(diameter)
-                + self.rear_left.get_revolutions(diameter)
-                + self.rear_right.get_revolutions(diameter)
+    def get_forward_velocity(self) -> float:
+        return (  self.front_left.get_revolutions(self.wheel_diameter)
+                + self.front_right.get_revolutions(self.wheel_diameter)
+                + self.rear_left.get_revolutions(self.wheel_diameter)
+                + self.rear_right.get_revolutions(self.wheel_diameter)
             ) / 4
 
-    def get_right_velocity(self, diameter: int) -> float:
-        return (- self.front_left.get_revolutions(diameter)
-                + self.front_right.get_revolutions(diameter)
-                + self.rear_left.get_revolutions(diameter)
-                - self.rear_right.get_revolutions(diameter)
+    def get_right_velocity(self) -> float:
+        return (- self.front_left.get_revolutions(self.wheel_diameter)
+                + self.front_right.get_revolutions(self.wheel_diameter)
+                + self.rear_left.get_revolutions(self.wheel_diameter)
+                - self.rear_right.get_revolutions(self.wheel_diameter)
             ) / 4
 
-    def get_angular_velocity(self, wheel_base: int, track_width: int, diameter: int) -> float:
-        factor = 4.0 * (wheel_base + track_width)
-        return (- self.front_left.get_revolutions(diameter)
-                + self.front_right.get_revolutions(diameter)
-                - self.rear_left.get_revolutions(diameter)
-                + self.rear_right.get_revolutions(diameter)
+    def get_angular_velocity(self) -> float:
+        factor = 4.0 * (self.wheel_base + self.track_width)
+        return (- self.front_left.get_revolutions(self.wheel_diameter)
+                + self.front_right.get_revolutions(self.wheel_diameter)
+                - self.rear_left.get_revolutions(self.wheel_diameter)
+                + self.rear_right.get_revolutions(self.wheel_diameter)
             ) / factor
