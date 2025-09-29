@@ -32,7 +32,7 @@ class MotorController(Node):
         # Create motors
         self.motors = {}
         for wheel in self.robot:
-            self.motors[wheel.name] = Motor(forward=wheel.in1, backward=wheel.in2, pwm=wheel.pwm)
+            self.motors[wheel.name] = Motor(forward=wheel.in1, backward=wheel.in2, enable=wheel.pwm, pwm=True)
 
         # Create encoders
         self.encoders = {}
@@ -54,26 +54,27 @@ class MotorController(Node):
         (vel_x + vel_y - (half_length + half_width) * vel_yaw) / wheel_radius,
         (vel_x - vel_y + (half_length + half_width) * vel_yaw) / wheel_radius ]
 
-        pwms = [int(max(min(ws / self.robot.max_wheel_speed * self.robot.max_pwm, self.robot.max_pwm), self.robot.min_pwm)) for ws in
-                wheel_speeds]
+        # Map angular speed linearly to PWM [-1, 1]
+        # Assume self.robot.max_wheel_speed is the max angular speed (rad/s)
+        max_w = max(self.robot.max_wheel_speed, 1e-6)
+        pwms = [max(min(w / max_w, 1.0), -1.0) for w in wheel_speeds]
 
         for i, wheel in enumerate(self.robot):
             self._drive(wheel.name, pwms[i])
 
     def _drive(self, wheel_name: str, value: float):
 
-        self.get_logger().warn(f'Driving {wheel_name} value {value}')
         motor: Motor = self.motors[wheel_name]
-        duty = abs(value)
+        # Apply per-wheel forward inversion if needed
+        signed = value if getattr(self.robot, wheel_name).forward else -value
+        # Clamp to [-1, 1]
+        signed = max(min(signed, 1.0), -1.0)
 
-        if value >= 0.1:
-            motor.value = duty
-            motor.forward()
-        elif value <= -0.1:
-            motor.value = duty
-            motor.backward()
+        if signed >= 0.1:
+            motor.forward(signed)
+        elif signed <= -0.1:
+            motor.backward(abs(signed))
         else:
-            motor.value = 0
             motor.stop()
 
     def publish_encoder(self):

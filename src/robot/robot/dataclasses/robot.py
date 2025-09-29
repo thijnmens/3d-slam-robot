@@ -65,7 +65,7 @@ class Robot:
         )
 
         # Parameters
-        self.max_wheel_speed = 10.0
+        self.max_wheel_speed = 1
         self.max_pwm = 1
         self.min_pwm = -1
 
