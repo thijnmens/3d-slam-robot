@@ -3,6 +3,7 @@ from typing import Dict, List, Set
 
 from lark.utils import Enumerator
 
+import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from messages.msg import Encoder  # noqa: F401
@@ -79,3 +80,15 @@ class MotorController(Node):
             encoder[wheel.name] = self.encoders[wheel.name].steps
 
         self.encoder_pub.publish(encoder)
+
+def main():
+    rclpy.init()
+    node = MotorController()
+
+    rclpy.spin(node)
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

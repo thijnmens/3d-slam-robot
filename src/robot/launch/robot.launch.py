@@ -46,10 +46,10 @@ def generate_launch_description():
     )
 
     # Motion controller
-    motion_controller = Node(
+    motor_controller = Node(
         package='robot',
-        executable='motion_controller',
-        name='motion_controller',
+        executable='motor_controller',
+        name='motor_controller',
         output='screen',
     )
 
@@ -112,7 +112,7 @@ def generate_launch_description():
         joy,
         joy2twist,
         odometry,
-        motion_controller,
+        motor_controller,
         rplidar,
         static_tf_base_to_laser,
         nav2,
