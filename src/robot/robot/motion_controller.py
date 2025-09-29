@@ -1,3 +1,4 @@
+import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from .dataclasses.robot import Robot
@@ -84,5 +85,14 @@ class MotionController(Node):
             ena.value = 0
             motor.stop()
 
+def main():
+    rclpy.init()
+    node = MotionController()
 
+    rclpy.spin(node)
 
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
