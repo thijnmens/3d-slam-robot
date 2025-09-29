@@ -1,5 +1,6 @@
 from geometry_msgs.msg import Twist
 from rclpy import Node
+from src.robot.robot.dataclasses.robot import Robot
 
 
 class MotionController(Node):
@@ -14,7 +15,13 @@ class MotionController(Node):
         self.get_logger().info("Creating publisher on /encoder topic")
         self.encoder_pub = self.create_publisher(Twist, '/encoder', 10)
 
-    def on_cmd(self, twist: Twist):
+        self.get_logger().info("Getting robot details")
+        self.robot = Robot()
 
+    def on_cmd(self, twist: Twist):
+        # Get pin and motor details from self.robot
+        # Move the robot based on /cmd_vel
+        # Return encoder details to /encoder (Check message definition)
+        pass
 
 

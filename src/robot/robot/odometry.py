@@ -7,6 +7,7 @@ from messages.msg import Encoder  # noqa: F401
 from nav_msgs.msg import Odometry as Odom
 from rclpy.publisher import Publisher
 from rclpy.subscription import Subscription
+from src.robot.robot.dataclasses.robot import Robot
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
 from .dataclasses import Wheels, Wheel
@@ -17,33 +18,6 @@ class Odometry(Node):
         super().__init__('odometry')
 
         self.get_logger().info("Initializing Odometry")
-
-        # Robot details
-        self.wheel_base: int = 200  # mm
-        self.track_width: int = 210  # mm
-        self.wheel_diameter: int = 60  # mm
-        self.wheels: Wheels = Wheels(
-            front_left = Wheel(
-                1,
-                True
-            ),
-            front_right = Wheel(
-                2,
-                False
-            ),
-            rear_left = Wheel(
-                3,
-                False
-            ),
-            rear_right = Wheel(
-                4,
-                True
-            )
-        )
-
-        # Encoder details
-        self.pulses_per_rev: int = 11
-        self.gear_ratio: float = 36 / 1
 
         # Pose
         self.x: float = 0.0
@@ -57,6 +31,10 @@ class Odometry(Node):
         self.odom_pub: Publisher = self.create_publisher(Odom, 'odom', 10)
 
         self.tf_broadcaster = TransformBroadcaster(self)
+
+        # Robot details
+        self.get_logger().info("Getting robot details")
+        self.robot = Robot()
 
         # TODO: remove, it's for testing only
         self.calculate_odom(None)
