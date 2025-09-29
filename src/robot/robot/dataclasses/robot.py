@@ -18,8 +18,8 @@ class Robot:
 
     def __init__(self):
         # Robot details
-        self.wheel_base: int = 200  # mm
-        self.track_width: int = 210  # mm
+        self.robot_width: int = 210  # mm
+        self.robot_length: int = 200  # mm
         self.wheel_diameter: int = 60  # mm
 
         # Encoder details
@@ -59,6 +59,11 @@ class Robot:
             9,
             10
         )
+
+        # Parameters
+        self.max_wheel_speed = 10.0
+        self.max_pwm = 1
+        self.min_pwm = -1
 
     def __iter__(self):
         yield self.front_left

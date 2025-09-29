@@ -66,10 +66,10 @@ class MotionController(Node):
     def publish_encoders(self):
         enc_msg = Encoder()
 
-        enc_msg.front_left = self.wheel_sign["FL"] * abs(self.encoders["FL"].steps)
-        enc_msg.front_right = self.wheel_sign["FR"] * abs(self.encoders["FR"].steps)
-        enc_msg.rear_left = self.wheel_sign["RL"] * abs(self.encoders["RL"].steps)
-        enc_msg.rear_right = self.wheel_sign["RR"] * abs(self.encoders["RR"].steps)
+        enc_msg.front_left = abs(self.encoders["FL"].steps)
+        enc_msg.front_right = abs(self.encoders["FR"].steps)
+        enc_msg.rear_left = abs(self.encoders["RL"].steps)
+        enc_msg.rear_right = abs(self.encoders["RR"].steps)
 
         self.encoder_pub.publish(enc_msg)
 
