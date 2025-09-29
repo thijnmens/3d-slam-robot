@@ -1,13 +1,16 @@
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist, TransformStamped
-from nav_msgs.msg import Odometry
-from tf2_ros import TransformBroadcaster
-from tf_transformations import quaternion_from_euler
+from math import sin, cos, pi
+from time import time
+
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
 from simple_pid import PID
-from time import time
-from math import sin, cos, pi
+
+import rclpy
+from geometry_msgs.msg import Twist, TransformStamped
+from nav_msgs.msg import Odometry
+from rclpy.node import Node
+from tf2_ros import TransformBroadcaster
+from tf_transformations import quaternion_from_euler
+
 
 class MotorDriver(Node):
     def __init__(self, config, L=0.20, W=0.21, R=0.03, pulses_per_rev=396):
@@ -51,8 +54,8 @@ class MotorDriver(Node):
 
         for wheel, pins in config.items():
             motor = Motor(forward=pins["in1"], backward=pins["in2"], pwm=False)
-            ena   = PWMOutputDevice(pins["ena"], frequency=1000, initial_value=0)
-            enc   = RotaryEncoder(a=pins["enc_a"], b=pins["enc_b"], max_steps=0)
+            ena = PWMOutputDevice(pins["ena"], frequency=1000, initial_value=0)
+            enc = RotaryEncoder(a=pins["enc_a"], b=pins["enc_b"], max_steps=0)
             self.motors[wheel] = {"motor": motor, "ena": ena}
             self.encoders[wheel] = enc
             self.pids[wheel] = PID(1.0, 0.1, 0.05, setpoint=0)  # tune later
@@ -60,12 +63,11 @@ class MotorDriver(Node):
 
         # Control time - computes wheel speed with PID and Odometry time - speed of updates
         self.last_control_time = time()
-        self.create_timer(0.02, self.control_loop)   # 50 Hz
-        self.create_timer(0.05, self.update_odometry) # 20 Hz
+        self.create_timer(0.02, self.control_loop)  # 50 Hz
+        self.create_timer(0.05, self.update_odometry)  # 20 Hz
 
         # TF broadcaster for odom -> base_link
         self.tf_broadcaster = TransformBroadcaster(self)
-
 
     # Use cmd_vel subscription to set velocity
     def cmd_vel_callback(self, msg: Twist):
@@ -85,7 +87,6 @@ class MotorDriver(Node):
         v_rr /= max_v
 
         self.setpoints.update({"FL": v_fl, "FR": v_fr, "RL": v_rl, "RR": v_rr})
-
 
     # Use encoders, so that we convert the pulses per revolution to m/s and update PID
     def control_loop(self):
@@ -110,7 +111,7 @@ class MotorDriver(Node):
             duty = self.pids[wheel](abs(speed))
 
             motor = self.motors[wheel]["motor"]
-            ena   = self.motors[wheel]["ena"]
+            ena = self.motors[wheel]["ena"]
 
             # Apply PWM with direction
             if self.setpoints[wheel] >= 0.1:
@@ -137,7 +138,7 @@ class MotorDriver(Node):
         now_ros = now_time.nanoseconds * 1e-9
         dt = now_ros - self.last_odom_time
         self.last_odom_time = now_ros
-        
+
         # Debug: log odometry update frequency
         self.get_logger().debug(f"Odometry update: dt={dt:.3f}s")
 
@@ -150,7 +151,7 @@ class MotorDriver(Node):
             total_pulses += abs(pulses)
             revs = pulses / self.pulses_per_rev
             d[wheel] = revs * 2 * pi * self.R
-        
+
         # Debug: log if encoders are reading
         # if total_pulses == 0:
         #     self.get_logger().warn("No encoder movement detected - check wiring!")
@@ -217,14 +218,15 @@ class MotorDriver(Node):
             self.motors[wheel]["motor"].stop()
             self.motors[wheel]["ena"].value = 0.0
 
+
 def main(args=None):
     rclpy.init(args=args)
-    #enc-a = yellow
+    # enc-a = yellow
     config = {
-        "FL": {"in1": 24 , "in2": 23,  "ena": 18, "enc_a": 25,  "enc_b": 27},
+        "FL": {"in1": 24, "in2": 23, "ena": 18, "enc_a": 25, "enc_b": 27},
         "FR": {"in1": 1, "in2": 22, "ena": 12, "enc_a": 16, "enc_b": 20},
-        "RL": {"in1": 21, "in2": 26, "ena": 19, "enc_a": 0,  "enc_b": 11},
-        "RR": {"in1": 6,  "in2": 5, "ena": 13, "enc_a": 9, "enc_b": 10},
+        "RL": {"in1": 21, "in2": 26, "ena": 19, "enc_a": 0, "enc_b": 11},
+        "RR": {"in1": 6, "in2": 5, "ena": 13, "enc_a": 9, "enc_b": 10},
     }
 
     node = MotorDriver(config)
@@ -240,4 +242,3 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
-
