@@ -77,7 +77,7 @@ class MotorController(Node):
     def publish_encoder(self):
         encoder = Encoder()
         for wheel in self.robot:
-            encoder[wheel.name] = self.encoders[wheel.name].steps
+            setattr(encoder, wheel.name, self.encoders[wheel.name].steps)
 
         self.encoder_pub.publish(encoder)
 
