@@ -28,6 +28,7 @@ class Robot:
 
         # Motor details
         self.front_left = Wheel(
+            "front_left",
             True,
             18,
             24,
@@ -36,6 +37,7 @@ class Robot:
             27
         )
         self.front_right = Wheel(
+            "front_right",
             False,
             12,
             1,
@@ -44,6 +46,7 @@ class Robot:
             20
         )
         self.rear_left = Wheel(
+            "rear_left",
             False,
             19,
             21,
@@ -52,6 +55,7 @@ class Robot:
             11
         )
         self.rear_right = Wheel(
+            "rear_right",
             True,
             13,
             6,

@@ -14,7 +14,8 @@ class Wheel:
     encoder_a: int
     encoder_b: int
 
-    def __init__(self, forward: bool, pwm: int, in1: int, in2: int, encoder_a: int, encoder_b: int):
+    def __init__(self, name:str, forward: bool, pwm: int, in1: int, in2: int, encoder_a: int, encoder_b: int):
+        self.name = name
         self.forward = forward
         self.pulses = 0
         self.pwm = pwm
