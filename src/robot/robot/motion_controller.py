@@ -6,7 +6,7 @@ from messages.msg import Encoder  # noqa: F401
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
 
 class MotionController(Node):
-    def __init__(self, config):
+    def __init__(self):
         super().__init__('motion_controller')
 
         self.get_logger().info("Initializing Motion Controller")
