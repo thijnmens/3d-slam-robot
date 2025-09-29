@@ -45,6 +45,8 @@ class MotionController(Node):
             "RR": RotaryEncoder(a=self.robot.rear_right.encoder_a, b=self.robot.rear_right.encoder_b),
         }
 
+        self.wheel_sign = {"FL": 1, "FR": -1, "RL": 1, "RR": -1}
+
     def on_cmd(self, twist: Twist):
         # Get pin and motor details from self.robot
         # Move the robot based on /cmd_vel
@@ -63,10 +65,10 @@ class MotionController(Node):
 
     def publish_encoders(self):
         enc_msg = Encoder()
-        enc_msg.front_left = int(self.encoders["FL"].steps)
-        enc_msg.front_right = int(self.encoders["FR"].steps)
-        enc_msg.rear_left = int(self.encoders["RL"].steps)
-        enc_msg.rear_right = int(self.encoders["RR"].steps)
+        enc_msg.front_left = self.wheel_sign["FL"] * int(self.encoders["FL"].steps)
+        enc_msg.front_right = self.wheel_sign["FR"] * int(self.encoders["FR"].steps)
+        enc_msg.rear_left = self.wheel_sign["RL"] * int(self.encoders["RL"].steps)
+        enc_msg.rear_right = self.wheel_sign["RR"] * int(self.encoders["RR"].steps)
 
         self.encoder_pub.publish(enc_msg)
 
