@@ -61,6 +61,8 @@ class MotorController(Node):
             self._drive(wheel.name, pwms[i])
 
     def _drive(self, wheel_name: str, value: float):
+
+        self.get_logger().warn(f'Driving {wheel_name} value {value}')
         motor: Motor = self.motors[wheel_name]
         duty = abs(value)
 
