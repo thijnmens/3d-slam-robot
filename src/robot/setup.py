@@ -27,7 +27,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "motor_driver = robot.motor_driver:main",
+            "motion_controller = robot.motion_controller:main",
             "odometry = robot.odometry:main",
         ],
     },
