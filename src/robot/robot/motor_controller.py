@@ -40,7 +40,7 @@ class MotorController(Node):
             self.encoders[wheel.name] = enc
 
             # Create PID
-            pid = PID(1.0, 0.1, 0.05, setpoint=0)
+            pid = PID(**wheel.PID, setpoint=0)
             pid.output_limits = (0, 1)
 
             # Save to map
