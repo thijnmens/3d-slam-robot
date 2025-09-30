@@ -4,52 +4,77 @@ import rclpy
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
+from .dataclasses.robot import Robot
 from std_msgs.msg import Float32MultiArray
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
 
 
 class OdometryNode(Node):
-    def __init__(self, L=0.20, W=0.21):
+    def __init__(self):
         super().__init__('odometry')
-        self.L = L
-        self.W = W
+
+        # Get robot details
+        self.robot = Robot()
+
+        # Robot position
         self.x = 0.0
         self.y = 0.0
-        self.theta = 0.0
-        self.last_time = self.get_clock().now().nanoseconds * 1e-9
+        self.yaw = 0.0
+
+        self.get_logger().info('Creating subscriber on /wheel_speeds topic')
         self.subscription = self.create_subscription(
             Float32MultiArray, 'wheel_speeds', self.wheel_speeds_callback, 10
         )
+
+        self.get_logger().info('Creating publisher on /odom topic')
         self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
+
+        self.get_logger().info('Creating TF tree broadcaster')
         self.tf_broadcaster = TransformBroadcaster(self)
 
-    def wheel_speeds_callback(self, msg: Float32MultiArray):
+        # Save time for deltatime calculations
+        self.last_time = self.get_clock().now().nanoseconds * 1e-9
+
+    def wheel_speeds_callback(self, msg: Float32MultiArray) -> None:
+        """
+        Updates the position of the robot based on the current velocity
+        :param msg: velocities of each wheel
+        """
+
+        # Ignore if less than 4 motors are in the array
         if len(msg.data) < 4:
             return
+
+        # Save time for delta time calculations
         now_time = self.get_clock().now()
         now_ros = now_time.nanoseconds * 1e-9
         dt = max(now_ros - self.last_time, 1e-3)
         self.last_time = now_ros
 
-        v_fl, v_fr, v_rl, v_rr = msg.data[:4]
-        vx = ((v_fl + v_fr + v_rl + v_rr) / 4.0)
-        vy = ((-v_fl + v_fr + v_rl - v_rr) / 4.0)
-        wz = (-v_fl + v_fr - v_rl + v_rr) / (4.0 * (self.L + self.W))
+        # Calculate robot movement vector from all motor velocities
+        vel_front_left, vel_front_right, vel_rear_left, vel_rear_right = msg.data[:4]
+        vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0)
+        vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0)
+        vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000)
 
-        vx = vx * -1.26
-        vy = vy * 1.26
-        wz = wz * -2.1
+        # Magic numbers
+        vel_x = vel_x * -1.26
+        vel_y = vel_y * 1.26
+        vel_yaw = vel_yaw * -2.1
 
-        self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
-        self.y += vx * sin(self.theta) * dt + vy * cos(self.theta) * dt
-        self.theta += wz * dt
+        # Update robot position based on velocity
+        self.x += vel_x * cos(self.yaw) * dt - vel_y * sin(self.yaw) * dt
+        self.y += vel_x * sin(self.yaw) * dt + vel_y * cos(self.yaw) * dt
+        self.yaw += vel_yaw * dt
 
-        while self.theta > pi:
-            self.theta -= 2 * pi
-        while self.theta < -pi:
-            self.theta += 2 * pi
+        # Normalize yaw
+        while self.yaw > pi:
+            self.yaw -= 2 * pi
+        while self.yaw < -pi:
+            self.yaw += 2 * pi
 
+        # Publish odometry
         odom = Odometry()
 
         odom.header.stamp = now_time.to_msg()
@@ -59,18 +84,19 @@ class OdometryNode(Node):
         odom.pose.pose.position.x = self.x
         odom.pose.pose.position.y = self.y
 
-        q = quaternion_from_euler(0.0, 0.0, self.theta)
+        q = quaternion_from_euler(0.0, 0.0, self.yaw)
         odom.pose.pose.orientation.x = q[0]
         odom.pose.pose.orientation.y = q[1]
         odom.pose.pose.orientation.z = q[2]
         odom.pose.pose.orientation.w = q[3]
 
-        odom.twist.twist.linear.x = vx
-        odom.twist.twist.linear.y = vy
-        odom.twist.twist.angular.z = wz
+        odom.twist.twist.linear.x = vel_x
+        odom.twist.twist.linear.y = vel_y
+        odom.twist.twist.angular.z = vel_yaw
 
         self.odom_pub.publish(odom)
 
+        # Publish TF tree
         t = TransformStamped()
 
         t.header.stamp = now_time.to_msg()
