@@ -1,114 +1,78 @@
-from math import sin, cos, pi
-from typing import Tuple
-
 import rclpy
-from geometry_msgs.msg import TransformStamped
-from nav_msgs.msg import Odometry
-from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.time import Time
-from .dataclasses.robot import Robot
 from std_msgs.msg import Float32MultiArray
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
+from math import sin, cos, pi
 
 
 class OdometryNode(Node):
-    def __init__(self):
+    def __init__(self, L=0.20, W=0.21):
         super().__init__('odometry')
-
-        # Robot data
-        self.robot = Robot()
-
-        # Robot location
+        self.L = L
+        self.W = W
         self.x = 0.0
         self.y = 0.0
-        self.yaw = 0.0
-
-        # Delta time
+        self.theta = 0.0
         self.last_time = self.get_clock().now().nanoseconds * 1e-9
-
-        # Wheel speed subscriber
-        self.get_logger().info("Creating subscription on /wheel_speeds topic")
         self.subscription = self.create_subscription(
-            Float32MultiArray, '/wheel_speeds', self.wheel_speeds_callback, 10
+            Float32MultiArray, 'wheel_speeds', self.wheel_speeds_callback, 10
         )
-
-        # Odometry publisher
-        self.get_logger().info("Creating publisher on /odom topic")
         self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
-
-        # TF tree broadcaster
-        self.get_logger().info("Creating TF broadcaster")
         self.tf_broadcaster = TransformBroadcaster(self)
 
     def wheel_speeds_callback(self, msg: Float32MultiArray):
-        # Check if all wheels are included
         if len(msg.data) < 4:
             return
-
-        # Save time for delta time calculations
         now_time = self.get_clock().now()
         now_ros = now_time.nanoseconds * 1e-9
         dt = max(now_ros - self.last_time, 1e-3)
         self.last_time = now_ros
 
-        # Calculate velocities
-        vel_fl, vel_fr, vel_rl, vel_rr = msg.data[:4]
-        vel_x = ((vel_fl + vel_fr + vel_rl + vel_rr) / 4.0)
-        vel_y = ((-vel_fl + vel_fr + vel_rl - vel_rr) / 4.0)
-        vel_yaw = (-vel_fl + vel_fr - vel_rl + vel_rr) / (4.0 * (self.robot.robot_length + self.robot.robot_width))
+        v_fl, v_fr, v_rl, v_rr = msg.data[:4]
+        vx = ((v_fl + v_fr + v_rl + v_rr) / 4.0)
+        vy = ((-v_fl + v_fr + v_rl - v_rr) / 4.0)
+        wz = (-v_fl + v_fr - v_rl + v_rr) / (4.0 * (self.L + self.W))
 
-        # Magic numbers
-        vel_x = vel_x * -1.26
-        vel_y = vel_y * 1.26
-        vel_yaw = vel_yaw * -2.1
+        vx = vx * -1.26
+        vy = vy * 1.26
+        wz = wz * -2.1
 
-        # Calculate new position
-        self.x += vel_x * cos(self.yaw) * dt - vel_y * sin(self.yaw) * dt
-        self.y += vel_x * sin(self.yaw) * dt + vel_y * cos(self.yaw) * dt
-        self.yaw += vel_yaw * dt
+        self.x += vx * cos(self.theta) * dt - vy * sin(self.theta) * dt
+        self.y += vx * sin(self.theta) * dt + vy * cos(self.theta) * dt
+        self.theta += wz * dt
 
-        # Normalize radials
-        while self.yaw > pi:
-            self.yaw -= 2 * pi
-        while self.yaw < -pi:
-            self.yaw += 2 * pi
+        while self.theta > pi:
+            self.theta -= 2 * pi
+        while self.theta < -pi:
+            self.theta += 2 * pi
 
-        # Convert to quaternion
-        quat = quaternion_from_euler(0.0, 0.0, self.yaw)
-
-        # Publish new position to odometry
-        self.publish_odom(now_time.to_msg(), vel_x, vel_y, vel_yaw, quat)
-
-        # Update transform tree
-        self.publish_tf(now_time.to_msg(), quat)
-
-    def publish_odom(self, stamp: Time, vel_x: float, vel_y: float, vel_yaw: float, q: Tuple[float, float, float, float]):
         odom = Odometry()
 
-        odom.header.stamp = stamp
+        odom.header.stamp = now_time.to_msg()
         odom.header.frame_id = "odom"
         odom.child_frame_id = "base_link"
 
         odom.pose.pose.position.x = self.x
         odom.pose.pose.position.y = self.y
 
+        q = quaternion_from_euler(0.0, 0.0, self.theta)
         odom.pose.pose.orientation.x = q[0]
         odom.pose.pose.orientation.y = q[1]
         odom.pose.pose.orientation.z = q[2]
         odom.pose.pose.orientation.w = q[3]
 
-        odom.twist.twist.linear.x = vel_x
-        odom.twist.twist.linear.y = vel_y
-        odom.twist.twist.angular.z = vel_yaw
+        odom.twist.twist.linear.x = vx
+        odom.twist.twist.linear.y = vy
+        odom.twist.twist.angular.z = wz
 
         self.odom_pub.publish(odom)
 
-    def publish_tf(self, stamp: Time, q: Tuple[float, float, float, float]):
         t = TransformStamped()
 
-        t.header.stamp = stamp
+        t.header.stamp = now_time.to_msg()
         t.header.frame_id = 'odom'
         t.child_frame_id = 'base_link'
 
