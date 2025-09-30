@@ -1,4 +1,5 @@
 from math import sin, cos, pi
+from typing import Tuple
 
 import rclpy
 from geometry_msgs.msg import TransformStamped
@@ -74,13 +75,16 @@ class OdometryNode(Node):
         while self.yaw < -pi:
             self.yaw += 2 * pi
 
+        # Convert to quaternion
+        quat = quaternion_from_euler(0.0, 0.0, self.yaw)
+
         # Publish new position to odometry
-        self.publish_odom(now_time.to_msg(), vel_x, vel_y, vel_yaw)
+        self.publish_odom(now_time.to_msg(), vel_x, vel_y, vel_yaw, quat)
 
         # Update transform tree
-        self.publish_tf(now_time.to_msg())
+        self.publish_tf(now_time.to_msg(), quat)
 
-    def publish_odom(self, stamp: Time, vel_x: float, vel_y: float, vel_yaw: float):
+    def publish_odom(self, stamp: Time, vel_x: float, vel_y: float, vel_yaw: float, q: Tuple[float, float, float, float]):
         odom = Odometry()
 
         odom.header.stamp = stamp
@@ -90,7 +94,6 @@ class OdometryNode(Node):
         odom.pose.pose.position.x = self.x
         odom.pose.pose.position.y = self.y
 
-        q = quaternion_from_euler(0.0, 0.0, self.yaw)
         odom.pose.pose.orientation.x = q[0]
         odom.pose.pose.orientation.y = q[1]
         odom.pose.pose.orientation.z = q[2]
@@ -102,7 +105,7 @@ class OdometryNode(Node):
 
         self.odom_pub.publish(odom)
 
-    def publish_tf(self, stamp: Time):
+    def publish_tf(self, stamp: Time, q: Tuple[float, float, float, float]):
         t = TransformStamped()
 
         t.header.stamp = stamp
@@ -113,7 +116,6 @@ class OdometryNode(Node):
         t.transform.translation.y = self.y
         t.transform.translation.z = 0.0
 
-        q = quaternion_from_euler(0.0, 0.0, self.yaw)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]
