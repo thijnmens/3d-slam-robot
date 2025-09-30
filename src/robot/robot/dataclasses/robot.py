@@ -35,7 +35,7 @@ class Robot:
             23,
             25,
             27,
-            (0.8, 2, 0.0)
+            (1.2, 2, 0.0)
         )
         self.front_right = Wheel(
             "front_right",
@@ -65,7 +65,7 @@ class Robot:
             5,
             9,
             10,
-            (0.8, 2, 0.0)
+            (1.2, 2, 0.0)
         )
 
         # Parameters
