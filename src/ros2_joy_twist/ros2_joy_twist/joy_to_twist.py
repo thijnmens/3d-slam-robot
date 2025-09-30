@@ -13,6 +13,8 @@ class JoyToTwist(Node):
         self.declare_parameters('', [
             ('axis_linear.x', 1),
             ('axis_linear.y', 0),
+            ('axis_linear_dpad.x', -1),
+            ('axis_linear_dpad.y', -1),
             ('axis_angular.yaw', 3),
             ('scale_linear.x', 1.0),
             ('scale_linear.y', 1.0),
@@ -27,6 +29,8 @@ class JoyToTwist(Node):
         gp = self.get_parameter
         self.ax_lin_x = gp('axis_linear.x').value
         self.ax_lin_y = gp('axis_linear.y').value
+        self.ax_lin_dpad_x = gp('axis_linear_dpad.x').value
+        self.ax_lin_dpad_y = gp('axis_linear_dpad.y').value
         self.ax_yaw = gp('axis_angular.yaw').value
 
         self.s_lin_x = gp('scale_linear.x').value
@@ -69,6 +73,11 @@ class JoyToTwist(Node):
         # Read axes with deadzone
         lin_x = self._dz(self._axis(msg.axes, self.ax_lin_x))
         lin_y = self._dz(self._axis(msg.axes, self.ax_lin_y))
+        # Add D-pad axes to joystick axes
+        if self.ax_lin_dpad_x >= 0:
+            lin_x += self._dz(self._axis(msg.axes, self.ax_lin_dpad_x))
+        if self.ax_lin_dpad_y >= 0:
+            lin_y += self._dz(self._axis(msg.axes, self.ax_lin_dpad_y))
         yaw = self._dz(self._axis(msg.axes, self.ax_yaw))
 
         # Build Twist (x forward, y strafe, z yaw)

@@ -56,7 +56,7 @@ class MotorController(Node):
 
         self.get_logger().info('Creating timer for control_loop')
         self.last_time = time()
-        self.create_timer(0.02, self.control_loop)
+        self.create_timer(0.01, self.control_loop)
 
     def setpoints_callback(self, msg: Float32MultiArray):
         if len(msg.data) >= 4:
