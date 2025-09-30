@@ -11,7 +11,7 @@ from .dataclasses.robot import Robot
 
 
 class MotorController(Node):
-    def __init__(self, pulses_per_rev=396, R=0.03):
+    def __init__(self):
         super().__init__('motor_controller')
 
         # Get robot data
@@ -67,7 +67,7 @@ class MotorController(Node):
             pulses = wheel.forward * (enc.steps - self.prev_pulses[wheel.name])
             self.prev_pulses[wheel.name] = enc.steps
 
-            revs = pulses / self.pulses_per_rev
+            revs = pulses / self.robot.pulses_per_rev
             distance = revs * 2 * pi * (self.robot.wheel_diameter / 2)
             speed = distance / dt
 
