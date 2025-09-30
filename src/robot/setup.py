@@ -32,6 +32,7 @@ setup(
             "velocity_calculator = robot.velocity_calculator:main",
             "motor_controller = robot.motor_controller:main",
             "odometry_node = robot.odometry_node:main",
+            "navigate_to_pose_client = robot.navigate_to_pose_client:main",
         ],
     },
 )

@@ -90,6 +90,14 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': 'False'}.items()
     )
 
+    # Nav2 NavigateToPose client
+    navigator = Node(
+        package='robot',
+        executable='navigate_to_pose_client',
+        name='navigate_to_pose_client',
+        output='screen'
+    )
+
     # Slam_toolbox with explicit params
     slam_toolbox_share = get_package_share_directory('robot')
     slam_params_file = os.path.join(slam_toolbox_share, 'config', 'slam_toolbox.yaml')
@@ -121,6 +129,7 @@ def generate_launch_description():
         rplidar,
         static_tf_base_to_laser,
         nav2,
+        navigator,
         slam_toolbox,
         rviz2,
     ])

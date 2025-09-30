@@ -34,11 +34,15 @@ class VelocityCalculator(Node):
         vel_y = max(min(vel_y / 1, 1.0), -1.0)
         vel_yaw = max(min(vel_yaw / 1, 1.0), -1.0)
 
+        # Convert mm to meters
+        length = self.robot.robot_length / 1000
+        width = self.robot.robot_width / 1000
+
         # Calculate velocity for each wheel to result in desired vector
-        vel_front_left = vel_x - vel_y - (self.robot.robot_length + self.robot.robot_width) * vel_yaw
-        vel_front_right = vel_x + vel_y + (self.robot.robot_length + self.robot.robot_width) * vel_yaw
-        vel_rear_left = vel_x + vel_y - (self.robot.robot_length + self.robot.robot_width) * vel_yaw
-        vel_rear_right = vel_x - vel_y + (self.robot.robot_length + self.robot.robot_width) * vel_yaw
+        vel_front_left = vel_x - vel_y - (length + width) * vel_yaw
+        vel_front_right = vel_x + vel_y + (length + width) * vel_yaw
+        vel_rear_left = vel_x + vel_y - (length + width) * vel_yaw
+        vel_rear_right = vel_x - vel_y + (length + width) * vel_yaw
 
         # Convert velocity to value between 0 and 1
         max_vel = max(abs(vel_front_left), abs(vel_front_right), abs(vel_rear_left), abs(vel_rear_right), 1.0)
