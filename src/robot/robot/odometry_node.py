@@ -4,10 +4,10 @@ import rclpy
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
-from .dataclasses.robot import Robot
 from std_msgs.msg import Float32MultiArray
 from tf2_ros import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
+from .dataclasses.robot import Robot
 
 
 class OdometryNode(Node):
@@ -56,7 +56,8 @@ class OdometryNode(Node):
         vel_front_left, vel_front_right, vel_rear_left, vel_rear_right = msg.data[:4]
         vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0)
         vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0)
-        vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000)
+        vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
+                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000)
 
         # Magic numbers
         vel_x = vel_x * -1.26

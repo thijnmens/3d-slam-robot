@@ -1,11 +1,13 @@
-import rclpy
-from rclpy.node import Node
-from .dataclasses.robot import Robot
-from std_msgs.msg import Float32MultiArray
+from math import pi
+from time import time
+
 from gpiozero import Motor, PWMOutputDevice, RotaryEncoder
 from simple_pid import PID
-from time import time
-from math import pi
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float32MultiArray
+from .dataclasses.robot import Robot
 
 
 class MotorController(Node):
@@ -58,7 +60,8 @@ class MotorController(Node):
 
     def setpoints_callback(self, msg: Float32MultiArray):
         if len(msg.data) >= 4:
-            self.setpoints["front_left"], self.setpoints["front_right"], self.setpoints["rear_left"], self.setpoints["rear_right"] = msg.data[:4]
+            self.setpoints["front_left"], self.setpoints["front_right"], self.setpoints["rear_left"], self.setpoints[
+                "rear_right"] = msg.data[:4]
 
     def control_loop(self) -> None:
         """
