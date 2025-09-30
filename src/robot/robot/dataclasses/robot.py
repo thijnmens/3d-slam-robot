@@ -78,29 +78,3 @@ class Robot:
         yield self.front_right
         yield self.rear_left
         yield self.rear_right
-
-    def pulses_to_distance(self, pulses: int):
-        revolutions = pulses / (self.pulses_per_rev * self.gear_ratio)
-        return self.wheel_diameter * math.pi * revolutions
-
-    def get_forward_velocity(self) -> float:
-        return (self.pulses_to_distance(self.front_left.pulses)
-                + self.pulses_to_distance(self.front_right.pulses)
-                + self.pulses_to_distance(self.rear_left.pulses)
-                + self.pulses_to_distance(self.rear_right.pulses)
-                ) / 4
-
-    def get_right_velocity(self) -> float:
-        return (- self.pulses_to_distance(self.front_left.pulses)
-                + self.pulses_to_distance(self.front_right.pulses)
-                + self.pulses_to_distance(self.rear_left.pulses)
-                - self.pulses_to_distance(self.rear_right.pulses)
-                ) / 4
-
-    def get_angular_velocity(self) -> float:
-        factor = 4.0 * (self.robot_width + self.robot_length)
-        return (- self.pulses_to_distance(self.front_left.pulses)
-                + self.pulses_to_distance(self.front_right.pulses)
-                - self.pulses_to_distance(self.rear_left.pulses)
-                + self.pulses_to_distance(self.rear_right.pulses)
-                ) / factor

@@ -29,6 +29,11 @@ class VelocityCalculator(Node):
         # Unpack requested vector
         vel_x, vel_y, vel_yaw = msg.linear.x, msg.linear.y, msg.angular.z
 
+        # Normalize input
+        vel_x = max(min(vel_x / 1, 1.0), -1.0)
+        vel_y = max(min(vel_y / 1, 1.0), -1.0)
+        vel_yaw = max(min(vel_yaw / 1, 1.0), -1.0)
+
         # Calculate velocity for each wheel to result in desired vector
         vel_front_left = vel_x - vel_y - (self.robot.robot_length + self.robot.robot_width) * vel_yaw
         vel_front_right = vel_x + vel_y + (self.robot.robot_length + self.robot.robot_width) * vel_yaw
