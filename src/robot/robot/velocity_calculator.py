@@ -1,8 +1,8 @@
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
-from .dataclasses.robot import Robot
 from std_msgs.msg import Float32MultiArray
+from .dataclasses.robot import Robot
 
 
 class VelocityCalculator(Node):

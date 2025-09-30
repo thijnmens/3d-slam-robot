@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import rclpy
+from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
+
 
 class JoyToTwist(Node):
     def __init__(self):
@@ -26,15 +27,15 @@ class JoyToTwist(Node):
         gp = self.get_parameter
         self.ax_lin_x = gp('axis_linear.x').value
         self.ax_lin_y = gp('axis_linear.y').value
-        self.ax_yaw   = gp('axis_angular.yaw').value
+        self.ax_yaw = gp('axis_angular.yaw').value
 
-        self.s_lin_x  = gp('scale_linear.x').value
-        self.s_lin_y  = gp('scale_linear.y').value
-        self.s_yaw    = gp('scale_angular.yaw').value
+        self.s_lin_x = gp('scale_linear.x').value
+        self.s_lin_y = gp('scale_linear.y').value
+        self.s_yaw = gp('scale_angular.yaw').value
 
-        self.enable_btn       = gp('enable_button').value
+        self.enable_btn = gp('enable_button').value
         self.enable_turbo_btn = gp('enable_turbo_button').value
-        self.turbo_scale      = gp('turbo_scale').value
+        self.turbo_scale = gp('turbo_scale').value
 
         self.deadzone = gp('deadzone').value
 
@@ -68,15 +69,16 @@ class JoyToTwist(Node):
         # Read axes with deadzone
         lin_x = self._dz(self._axis(msg.axes, self.ax_lin_x))
         lin_y = self._dz(self._axis(msg.axes, self.ax_lin_y))
-        yaw   = self._dz(self._axis(msg.axes, self.ax_yaw))
+        yaw = self._dz(self._axis(msg.axes, self.ax_yaw))
 
         # Build Twist (x forward, y strafe, z yaw)
         cmd = Twist()
-        cmd.linear.x  = lin_x * self.s_lin_x * turbo
-        cmd.linear.y  = lin_y * self.s_lin_y * turbo
-        cmd.angular.z = yaw   * self.s_yaw   * turbo
+        cmd.linear.x = lin_x * self.s_lin_x * turbo
+        cmd.linear.y = lin_y * self.s_lin_y * turbo
+        cmd.angular.z = yaw * self.s_yaw * turbo
 
         self.pub.publish(cmd)
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -88,6 +90,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
