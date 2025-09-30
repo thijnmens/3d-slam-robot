@@ -54,7 +54,7 @@ class MotorController(Node):
 
     def setpoints_callback(self, msg: Float32MultiArray):
         if len(msg.data) >= 4:
-            self.setpoints["FL"], self.setpoints["FR"], self.setpoints["RL"], self.setpoints["RR"] = msg.data[:4]
+            self.setpoints["front_left"], self.setpoints["front_right"], self.setpoints["right_left"], self.setpoints["rear_left"] = msg.data[:4]
 
     def control_loop(self):
         now = time()
