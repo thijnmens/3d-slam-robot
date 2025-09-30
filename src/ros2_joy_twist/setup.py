@@ -1,7 +1,6 @@
-import os
-from glob import glob
-
 from setuptools import setup
+from glob import glob
+import os
 
 package_name = 'ros2_joy_twist'
 

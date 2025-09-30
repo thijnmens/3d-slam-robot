@@ -1,11 +1,9 @@
-import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-
+from ament_index_python.packages import get_package_share_directory
+import os
 
 def generate_launch_description():
     """
@@ -37,20 +35,24 @@ def generate_launch_description():
         parameters=[mappings],
     )
 
-    # Odometry
-    odometry = Node(
+    # Split motor stack
+    velocity_calculator = Node(
         package='robot',
-        executable='odometry',
-        name='odometry',
-        output='screen',
+        executable='velocity_calculator',
+        name='velocity_calculator',
+        output='screen'
     )
-
-    # Motion controller
     motor_controller = Node(
         package='robot',
         executable='motor_controller',
         name='motor_controller',
-        output='screen',
+        output='screen'
+    )
+    odometry_node = Node(
+        package='robot',
+        executable='odometry_node',
+        name='odometry_node',
+        output='screen'
     )
 
     # Lidar node
@@ -111,8 +113,9 @@ def generate_launch_description():
     return LaunchDescription([
         joy,
         joy2twist,
-        odometry,
+        velocity_calculator,
         motor_controller,
+        odometry_node,
         rplidar,
         static_tf_base_to_laser,
         nav2,

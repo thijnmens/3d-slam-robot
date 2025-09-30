@@ -1,4 +1,0 @@
-uint64 front_left
-uint64 front_right
-uint64 rear_left
-uint64 rear_right
