@@ -14,6 +14,12 @@ def generate_launch_description():
     ros_dir = '/opt/ros/jazzy/share/'
     package_dir = get_package_share_directory('robot')
 
+    config = os.path.join(
+        package_dir,
+        'config',
+        'nav2_params'
+    )
+
     # Motor driver
     motor_driver = Node(
         package='robot',
@@ -52,7 +58,8 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
         ),
-        launch_arguments={'use_sim_time': 'False', 'use_localization': 'True', 'map': f'{package_dir}/map/map.yaml'}.items()
+        launch_arguments={'use_sim_time': 'False', 'use_localization': 'True', 'map': f'{package_dir}/map/map.yaml', 'params-file': f'{package_dir}/config/nav2_params.yaml'}.items(),
+        parameters = [config]
     )
 
     return LaunchDescription([
