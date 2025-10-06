@@ -35,12 +35,19 @@ def generate_launch_description():
         parameters=[mappings],
     )
 
-    # Motor driver
-    motor_driver = Node(
+    # Motor controller and odometry publisher
+    motor_controller = Node(
         package='robot',
-        executable='motor_driver',
-        name='motor_driver',
-        output='screen'
+        executable='motor_controller',
+        name='motor_controller',
+        output='screen',
+    )
+
+    odom_pub = Node(
+        package='robot',
+        executable='odometry_publisher',
+        name='odometry_publisher',
+        output='screen',
     )
 
     # Lidar node
@@ -101,7 +108,8 @@ def generate_launch_description():
     return LaunchDescription([
         joy,
         joy2twist,
-        motor_driver,
+        motor_controller,
+        odom_pub,
         rplidar,
         static_tf_base_to_laser,
         nav2,
