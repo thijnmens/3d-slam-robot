@@ -69,8 +69,8 @@ class MotorController(Node):
         """
         # Save time for delta time calculations
         now = time()
-        dt = now - self.last_control_time
         self.last_control_time = now
+        dt = now - self.last_control_time
 
         # Calculate velocity for each motor
         speeds = []
