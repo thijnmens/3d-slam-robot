@@ -24,11 +24,11 @@ class OdometryNode(Node):
 
         self.get_logger().info('Creating subscriber on /wheel_speeds topic')
         self.subscription = self.create_subscription(
-            Float32MultiArray, 'wheel_speeds', self.wheel_speeds_callback, 10
+            Float32MultiArray, 'wheel_speeds', self.wheel_speeds_callback
         )
 
         self.get_logger().info('Creating publisher on /odom topic')
-        self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
+        self.odom_pub = self.create_publisher(Odometry, 'odom')
 
         self.get_logger().info('Creating TF tree broadcaster')
         self.tf_broadcaster = TransformBroadcaster(self)
@@ -49,7 +49,7 @@ class OdometryNode(Node):
         # Save time for delta time calculations
         now_time = self.get_clock().now()
         now_ros = now_time.nanoseconds * 1e-3
-        dt = max(now_ros - self.last_time, 1e-3)
+        dt = max(now_ros - self.last_time, 1e-3) #maybe 
         self.last_time = now_ros
 
         # Calculate robot movement vector from all motor velocities
@@ -57,7 +57,7 @@ class OdometryNode(Node):
         vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0)
         vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0)
         vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
-                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 2000)
+                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 10000)
 
         # Magic numbers
         vel_x = vel_x * -1.26
