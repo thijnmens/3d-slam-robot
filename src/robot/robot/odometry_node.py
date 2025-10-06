@@ -34,7 +34,7 @@ class OdometryNode(Node):
         self.tf_broadcaster = TransformBroadcaster(self)
 
         # Save time for deltatime calculations
-        self.last_time = self.get_clock().now().nanoseconds * 1e-9
+        self.last_time = self.get_clock().now().nanoseconds * 1e-3
 
     def wheel_speeds_callback(self, msg: Float32MultiArray) -> None:
         """
@@ -48,7 +48,7 @@ class OdometryNode(Node):
 
         # Save time for delta time calculations
         now_time = self.get_clock().now()
-        now_ros = now_time.nanoseconds * 1e-9
+        now_ros = now_time.nanoseconds * 1e-3
         dt = max(now_ros - self.last_time, 1e-3)
         self.last_time = now_ros
 

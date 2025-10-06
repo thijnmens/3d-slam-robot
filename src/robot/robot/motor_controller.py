@@ -84,8 +84,8 @@ class MotorController(Node):
 
             # Calculate velocity from pulses
             revs = pulses / (self.robot.pulses_per_rev * self.robot.gear_ratio)
-            distance = revs * 2 * pi * (self.robot.wheel_diameter / 2)
-            speed = distance / 1000 / dt
+            distance = revs * pi * self.robot.wheel_diameter
+            speed = distance / dt
 
             # Update setpoint for the wheel PID
             self.pids[wheel.name].setpoint = abs(self.setpoints[wheel.name])
