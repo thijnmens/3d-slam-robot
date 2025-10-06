@@ -36,7 +36,12 @@ class VelocityCalculator(Node):
         vel_rear_right = vx - vy + (self.robot.robot_length + self.robot.robot_width) * wz
 
         # Convert velocity to value between 0 and 1
-        max_vel = max(abs(vel_front_left), abs(vel_front_right), abs(vel_rear_left), abs(vel_rear_right), 1.0)
+        max_vel = max(abs(vel_front_left), abs(vel_front_right), abs(vel_rear_left), abs(vel_rear_right))
+        if max_vel > 1.0:
+            vel_front_left /= max_vel
+            vel_front_right /= max_vel
+            vel_rear_left /= max_vel
+            vel_rear_right /= max_vel
 
         # Limit velocities to maximum
         vel_front_left /= max_vel
