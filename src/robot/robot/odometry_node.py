@@ -33,7 +33,7 @@ class OdometryNode(Node):
         self.get_logger().info('Creating TF tree broadcaster')
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        self.last_odom_time = self.get_clock().now().nanoseconds * 1e-9
+        self.last_odom_time = self.get_clock().now().nanoseconds 
 
     def wheel_speeds_callback(self, msg: Float32MultiArray) -> None:
         """
@@ -56,7 +56,7 @@ class OdometryNode(Node):
         vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0) 
         vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0) 
         vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
-                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 10000)  ##
+                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000)  ##
 
         # Magic numbers
         vel_x = vel_x * -1.26
