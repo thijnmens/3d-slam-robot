@@ -53,10 +53,10 @@ class OdometryNode(Node):
 
         # Calculate robot movement vector from all motor velocities
         vel_front_left, vel_front_right, vel_rear_left, vel_rear_right = msg.data[:4]
-        vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0) /dt
-        vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0) /dt
+        vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0) 
+        vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0) 
         vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
-                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000) /dt ##
+                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 1000)  ##
 
         # Magic numbers
         vel_x = vel_x * -1.26
