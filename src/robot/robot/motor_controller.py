@@ -62,6 +62,8 @@ class MotorController(Node):
         if len(msg.data) >= 4:
             self.setpoints["front_left"], self.setpoints["front_right"], self.setpoints["rear_left"], self.setpoints[
                 "rear_right"] = msg.data[:4]
+            
+        self.last_control_time = time()
 
     def control_loop(self) -> None:
         """
@@ -69,8 +71,8 @@ class MotorController(Node):
         """
         # Save time for delta time calculations
         now = time()
-        self.last_control_time = now
         dt = now - self.last_control_time
+        self.last_control_time = now
 
         # Calculate velocity for each motor
         speeds = []
