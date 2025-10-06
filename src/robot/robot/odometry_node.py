@@ -57,7 +57,7 @@ class OdometryNode(Node):
         vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0)
         vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0)
         vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
-                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 10000) ##
+                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 100) ##
 
         # Magic numbers
         vel_x = vel_x * -1.26
