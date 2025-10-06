@@ -31,7 +31,8 @@ setup(
     entry_points={
         'console_scripts': [
             "velocity_subscriber = robot.velocity_subscriber:main",
-            "motor_driver = robot.motor_driver:main"
+            "motor_driver = robot.motor_driver:main",
+            "navigate_to_pose_client = robot.navigate_to_pose_client:main",
         ],
     },
 )

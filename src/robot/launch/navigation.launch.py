@@ -28,6 +28,14 @@ def generate_launch_description():
         output='screen'
     )
 
+    # Navigator
+    navigator = Node(
+        package='robot',
+        executable='navigate_to_pose_client',
+        name='navigate_to_pose_client',
+        output='screen'
+    )
+
     # Lidar node
     rplidar = Node(
         name='rplidar_composition',
@@ -58,13 +66,13 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_dir, 'nav2_bringup', 'launch', 'bringup_launch.py')
         ),
-        launch_arguments={'use_sim_time': 'False', 'use_localization': 'True', 'map': f'{package_dir}/map/map.yaml', 'params-file': f'{package_dir}/config/nav2_params.yaml'}.items(),
-        parameters = [config]
+        launch_arguments={'use_sim_time': 'False', 'use_localization': 'True', 'map': f'{package_dir}/map/map.yaml', 'params-file': f'{package_dir}/config/nav2_params.yaml'}.items()
     )
 
     return LaunchDescription([
         motor_driver,
         rplidar,
+        navigator,
         static_tf_base_to_laser,
         nav2,
     ])
