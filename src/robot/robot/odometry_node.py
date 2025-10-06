@@ -33,7 +33,7 @@ class OdometryNode(Node):
         self.get_logger().info('Creating TF tree broadcaster')
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        self.last_odom_time = self.get_clock().now().nanoseconds 
+        self.last_odom_time = self.get_clock().now().nanoseconds * 1e-9
 
     def wheel_speeds_callback(self, msg: Float32MultiArray) -> None:
         """
