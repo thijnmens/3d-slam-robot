@@ -21,6 +21,8 @@ class MotorController(Node):
         self.motors = {}
         self.encoders = {}
 
+        self.last_control_time = time()
+
         # Pids
         self.pids = {}
         self.setpoints = {"front_left": 0.0, "front_right": 0.0, "rear_left": 0.0, "rear_right": 0.0}
@@ -63,8 +65,6 @@ class MotorController(Node):
             self.setpoints["front_left"], self.setpoints["front_right"], self.setpoints["rear_left"], self.setpoints[
                 "rear_right"] = msg.data[:4]
             
-        self.last_control_time = time()
-
     def control_loop(self) -> None:
         """
         Calculates the velocity for each wheel and publishes to /wheel_speeds for odometry
