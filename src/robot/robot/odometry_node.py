@@ -33,8 +33,7 @@ class OdometryNode(Node):
         self.get_logger().info('Creating TF tree broadcaster')
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        # Save time for deltatime calculations
-        self.last_time = self.get_clock().now().nanoseconds * 1e-3
+        self.last_odom_time = self.get_clock().now().nanoseconds * 1e-9
 
     def wheel_speeds_callback(self, msg: Float32MultiArray) -> None:
         """
@@ -48,16 +47,16 @@ class OdometryNode(Node):
 
         # Save time for delta time calculations
         now_time = self.get_clock().now()
-        now_ros = now_time.nanoseconds * 1e-3
-        dt = max(now_ros - self.last_time, 1e-3) #maybe 
-        self.last_time = now_ros
+        now_ros = now_time.nanoseconds * 1e-9
+        dt = now_ros - self.last_odom_time
+        self.last_odom_time = now_ros
 
         # Calculate robot movement vector from all motor velocities
         vel_front_left, vel_front_right, vel_rear_left, vel_rear_right = msg.data[:4]
-        vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0)
-        vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0)
+        vel_x = ((vel_front_left + vel_front_right + vel_rear_left + vel_rear_right) / 4.0) /dt
+        vel_y = ((-vel_front_left + vel_front_right + vel_rear_left - vel_rear_right) / 4.0) /dt
         vel_yaw = (-vel_front_left + vel_front_right - vel_rear_left + vel_rear_right) / (
-                    4.0 * (self.robot.robot_length + self.robot.robot_width) / 100) ##
+                    4.0 * (self.robot.robot_length + self.robot.robot_width)) /dt ##
 
         # Magic numbers
         vel_x = vel_x * -1.26

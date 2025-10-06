@@ -69,22 +69,22 @@ class MotorController(Node):
         """
         # Save time for delta time calculations
         now = time()
-        dt = max(now - self.last_time, 1e-3)
-        self.last_time = now
+        dt = now - self.last_control_time
+        self.last_control_time = now
 
         # Calculate velocity for each motor
         speeds = []
         for wheel in self.robot:
             # Get pulses
             enc = self.encoders[wheel.name]
-            pulses = (-1 if wheel.forward else 1) * (enc.steps - self.prev_pulses[wheel.name])
+            pulses = (-1 if wheel.forward else 1) * (enc.steps - self.prev_pulses[wheel.name]) # potential change
 
             # Save pulses for next run
             self.prev_pulses[wheel.name] = enc.steps
 
             # Calculate velocity from pulses
             revs = pulses / (self.robot.pulses_per_rev * self.robot.gear_ratio)
-            distance = revs * pi * self.robot.wheel_diameter
+            distance = revs * 2 * pi * self.robot.wheel_diameter
             speed = distance / dt
 
             # Update setpoint for the wheel PID
