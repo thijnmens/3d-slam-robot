@@ -35,18 +35,23 @@ def generate_launch_description():
         parameters=[mappings],
     )
 
-    # Motor controller and odometry publisher
+    # Custom Python nodes (controller + odom)
     motor_controller = Node(
         package='robot',
         executable='motor_controller',
         name='motor_controller',
         output='screen',
     )
-
     odom_pub = Node(
         package='robot',
         executable='odometry_publisher',
         name='odometry_publisher',
+        output='screen',
+    )
+    encoder_pub = Node(
+        package='robot',
+        executable='encoder_publisher',
+        name='encoder_publisher',
         output='screen',
     )
 
@@ -110,6 +115,7 @@ def generate_launch_description():
         joy2twist,
         motor_controller,
         odom_pub,
+        encoder_pub,
         rplidar,
         static_tf_base_to_laser,
         nav2,

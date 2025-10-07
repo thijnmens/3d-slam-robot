@@ -20,12 +20,24 @@ def generate_launch_description():
         'nav2_params'
     )
 
-    # Motor driver
-    motor_driver = Node(
+    # Custom Python nodes
+    motor_controller = Node(
         package='robot',
-        executable='motor_driver',
-        name='motor_driver',
-        output='screen'
+        executable='motor_controller',
+        name='motor_controller',
+        output='screen',
+    )
+    odom_pub = Node(
+        package='robot',
+        executable='odometry_publisher',
+        name='odometry_publisher',
+        output='screen',
+    )
+    encoder_pub = Node(
+        package='robot',
+        executable='encoder_publisher',
+        name='encoder_publisher',
+        output='screen',
     )
 
     # Navigator
@@ -70,7 +82,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        motor_driver,
+        motor_controller,
+        odom_pub,
+        encoder_pub,
         rplidar,
         navigator,
         static_tf_base_to_laser,

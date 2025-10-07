@@ -21,7 +21,7 @@ setup(
         (os.path.join('share', package_name, 'map'),
          glob('map/*.pgm')),
     ],
-    install_requires=['setuptools', 'launch'],
+    install_requires=['setuptools', 'launch', 'simple-pid'],
     zip_safe=True,
     maintainer='group6',
     maintainer_email='group6@todo.todo',
@@ -30,9 +30,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "velocity_subscriber = robot.velocity_subscriber:main",
             "motor_controller = robot.motor_controller:main",
             "odometry_publisher = robot.odometry_publisher:main",
+            "encoder_publisher = robot.encoder_publisher:main",
             "navigate_to_pose_client = robot.navigate_to_pose_client:main",
         ],
     },
