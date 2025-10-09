@@ -69,12 +69,12 @@ class Robot:
         )
 
         # Parameters
-        self.max_wheel_speed = 0.5
+        self.max_wheel_speed = 0.75
         self.max_pwm = 1
 
         # PWM scaling
-        self.duty_min = 0.35
-        self.duty_gain = 0.75
+        self.duty_min = 0.50
+        self.duty_gain = 1
 
     def __iter__(self):
         yield self.front_left
