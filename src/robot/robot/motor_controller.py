@@ -56,21 +56,28 @@ class MotorController(Node):
 
     def on_cmd_vel(self, msg: Twist):
         factor = (self.robot.robot_length + self.robot.robot_width) * msg.angular.z
-        
-        # Calculate wheel velocities
+
         vel_fl = msg.linear.x - msg.linear.y - factor
         vel_fr = msg.linear.x + msg.linear.y + factor
         vel_rl = msg.linear.x + msg.linear.y - factor
         vel_rr = msg.linear.x - msg.linear.y + factor
 
-        # Limit velocities to 1
-        max_vel = max(abs(vel_fl), abs(vel_fr), abs(vel_rl), abs(vel_rr), 1.0)
+        # Get max abs velocity
+        max_vel = max(abs(vel_fl), abs(vel_fr), abs(vel_rl), abs(vel_rr), 0.7)
+
+        # Normalize and clamp between 0.3 and 1
+        def clamp_and_scale(v):
+            norm = v / max_vel
+            sign = 1 if norm >= 0 else -1
+            norm_abs = abs(norm)
+            norm_abs = max(0.4, min(norm_abs, 0.7))
+            return sign * norm_abs
 
         self.setpoints.update({
-            "FL": vel_fl / max_vel,
-            "FR": vel_fr / max_vel,
-            "RL": vel_rl / max_vel,
-            "RR": vel_rr / max_vel,
+            "FL": clamp_and_scale(vel_fl),
+            "FR": clamp_and_scale(vel_fr),
+            "RL": clamp_and_scale(vel_rl),
+            "RR": clamp_and_scale(vel_rr),
         })
 
     def on_encoder_counts(self, msg: Int64MultiArray):
