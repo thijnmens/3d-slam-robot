@@ -70,7 +70,7 @@ class MotorController(Node):
             norm = v / max_vel
             sign = 1 if norm >= 0 else -1
             norm_abs = abs(norm)
-            norm_abs = max(0.4, min(norm_abs, 0.7))
+            norm_abs = max(0.0, min(norm_abs, 0.7))
             return sign * norm_abs
 
         self.setpoints.update({
